@@ -2,7 +2,7 @@
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
-interface BaseLayer {
+public interface BaseLayer {
     public final int m_nUpperLayerCount = 0;
     public final String m_pLayerName = null;
     public final BaseLayer mp_UnderLayer = null;
@@ -12,7 +12,7 @@ interface BaseLayer {
 
     public BaseLayer GetUnderLayer();
 
-    public BaseLayer GetUpperLayer(int nindex); // 0�� 1��
+    public BaseLayer GetUpperLayer(int nindex);
 
     public void SetUnderLayer(BaseLayer pUnderLayer);
 
