@@ -1,5 +1,4 @@
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 public interface BaseLayer {
@@ -39,6 +38,5 @@ public interface BaseLayer {
         return false;
     }
 
-    public void set_progressBar(int length, int i);
 
 }
