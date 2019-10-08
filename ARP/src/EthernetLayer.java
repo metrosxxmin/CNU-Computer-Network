@@ -1,10 +1,4 @@
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class EthernetLayer implements BaseLayer {
@@ -51,26 +45,30 @@ public class EthernetLayer implements BaseLayer {
 
 
 	public boolean Send(byte[] input, int length) {
-	
-
 		return false;
 	}
 
 	
 
 	public boolean Receive(byte[] input) {
-		
 		return true;
 	}
 
+	
+	
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
-	
+		if (pUnderLayer == null)
+			return;
+		p_UnderLayer = pUnderLayer;
 	}
 
 	@Override
 	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		
+		if (pUpperLayer == null)
+			return;
+		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
+		// nUpperLayerCount++;
 	}
 
 	@Override
@@ -81,17 +79,21 @@ public class EthernetLayer implements BaseLayer {
 
 	@Override
 	public BaseLayer GetUnderLayer() {
-		return  null;
+		if (p_UnderLayer == null)
+			return null;
+		return p_UnderLayer;
 	}
 
 	@Override
 	public BaseLayer GetUpperLayer(int nindex) {
-		return null;
+		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
+			return null;
+		return p_aUpperLayer.get(nindex);
 	}
 
 	@Override
 	public void SetUpperUnderLayer(BaseLayer pUULayer) {
-		
-
+		this.SetUpperLayer(pUULayer);
+		pUULayer.SetUnderLayer(this);
 	}
 }
