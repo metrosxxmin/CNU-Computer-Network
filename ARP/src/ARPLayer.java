@@ -45,7 +45,17 @@ public class ARPLayer implements BaseLayer {
 		_ARP_MAC_ADDR _arp_mac_dstaddr;
 		_ARP_PROTOCOL_ADDR _arp_protocol_dstaddr;	// first sending, it's empty.
 		
-		
+		public _ARP_HEADER() {
+			arp_hwType = new byte[2];
+			arp_protoAddrType = new byte[2];
+			arp_hwAddrLength = new byte[1];
+			arp_protoAddrLength = new byte[1];
+			arp_opcode = new byte[2];
+			_arp_mac_srcaddr = new _ARP_MAC_ADDR();
+			_arp_protocol_srcaddr = new _ARP_PROTOCOL_ADDR();
+			_arp_mac_dstaddr = new _ARP_MAC_ADDR();
+			_arp_protocol_dstaddr = new _ARP_PROTOCOL_ADDR();
+		}
 	}
 	
 	
