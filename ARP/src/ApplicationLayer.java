@@ -16,7 +16,13 @@ import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
-
+import java.awt.Panel;
+import java.awt.BorderLayout;
+import javax.swing.border.TitledBorder;
+import java.awt.Color;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+ 
 public class ApplicationLayer extends JFrame implements BaseLayer {
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
@@ -27,28 +33,22 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 	private static LayerManager m_LayerMgr = new LayerManager();
 	int selected_index;
-	private JTextField ChattingWrite;
-	private JTextField FileDir_path;
+	private JTextField IPAddressWrite;
 
 	Container contentPane;
 
-	JTextArea ChattingArea;
-	JTextArea srcMacAddress;
-	JTextArea dstMacAddress;
+	JTextArea TotalArea;
 
-	JLabel lblSelectNic;
-	JLabel lblsrc;
-	JLabel lbldst;
-
-	JButton Setting_Button;
-	JButton File_select_Button;
-	JButton Chat_send_Button;
-	JButton NIC_select_Button;
-	JButton File_send_Button;
-
-	JComboBox comboBox;
+	JButton btnAllDelete;
+	JButton btnIPSend;
+	JButton btnItemDelete;
 
 	FileDialog fd;
+	private JTextField H_WAddressWrite;
+	/**
+	 * @wbp.nonvisual location=108,504
+	 */
+	private final JPopupMenu popupMenu = new JPopupMenu();
 
 	public static void main(String[] args) {
 //		m_LayerMgr.AddLayer(new NILayer("NI"));
@@ -63,120 +63,40 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		pLayerName = pName;
 		setTitle("Chatting & File Transfer");
 
-		setBounds(250, 250, 580, 400);
+		setBounds(250, 250, 987, 477);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		contentPane = this.getContentPane();
-		JPanel pane = new JPanel();
+		getContentPane().setLayout(null);
+		JPanel ARP_Cache = new JPanel();
+		ARP_Cache.setBounds(14, 12, 458, 366);
+		ARP_Cache.setBorder(new TitledBorder(null, "ARP Cache", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		pane.setLayout(null);
-		contentPane.add(pane);
+		ARP_Cache.setLayout(null);
+		contentPane.add(ARP_Cache);
 
-		ChattingArea = new JTextArea();
-		ChattingArea.setEditable(false);
-		ChattingArea.setBounds(12, 13, 359, 226);
-		pane.add(ChattingArea);// 채팅
+		TotalArea = new JTextArea();
+		TotalArea.setEditable(false);
+		TotalArea.setBounds(14, 24, 430, 227);
+		ARP_Cache.add(TotalArea);
 
-		srcMacAddress = new JTextArea();
-		srcMacAddress.setEditable(false);
-		srcMacAddress.setBounds(383, 123, 170, 24);
-		pane.add(srcMacAddress);// 보내는 주소
+		IPAddressWrite = new JTextField();
+		IPAddressWrite.setBounds(71, 307, 239, 32);// 249
+		ARP_Cache.add(IPAddressWrite);
+		IPAddressWrite.setColumns(10);
 
-		dstMacAddress = new JTextArea();
-		dstMacAddress.setBounds(383, 182, 170, 24);
-		pane.add(dstMacAddress);// 받는 사람 주소
+		btnAllDelete = new JButton("All Delete");// setting
 
-		ChattingWrite = new JTextField();
-		ChattingWrite.setBounds(12, 249, 359, 20);// 249
-		pane.add(ChattingWrite);
-		ChattingWrite.setColumns(10);// 채팅 쓰는 곳
+		btnAllDelete.setBounds(240, 263, 165, 35);
+		ARP_Cache.add(btnAllDelete);
 
-		FileDir_path = new JTextField();
-		FileDir_path.setEditable(false);
-		FileDir_path.setBounds(12, 280, 532, 20); // 280
-		pane.add(FileDir_path);
-		FileDir_path.setColumns(10);// file 경로
-
-		lblSelectNic = new JLabel("NIC List");
-		lblSelectNic.setBounds(383, 13, 170, 20);
-		pane.add(lblSelectNic);// 글자
-
-		lblsrc = new JLabel("Source Mac Address");
-		lblsrc.setBounds(383, 98, 170, 20);
-		pane.add(lblsrc);
-
-		lbldst = new JLabel("Destination Mac Address");
-		lbldst.setBounds(383, 157, 170, 20);
-		pane.add(lbldst);
-
-		Setting_Button = new JButton("Setting");// setting
-		Setting_Button.addActionListener(new ActionListener() {
+		btnIPSend = new JButton("Send");
+		btnIPSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				if (btnAllDelete.getText() == "Reset") {
+					String input = IPAddressWrite.getText();
 
-				if (Setting_Button.getText() == "Reset") {
-					srcMacAddress.setText("");
-					dstMacAddress.setText("");
-					Setting_Button.setText("Setting");
-					dstMacAddress.setEditable(true);
-				} else {
-					byte[] srcAddress = new byte[6];
-					byte[] dstAddress = new byte[6];
-
-					String src = srcMacAddress.getText();
-					String dst = dstMacAddress.getText();
-
-					String[] byte_src = src.split("-");
-					for (int i = 0; i < 6; i++) {
-						srcAddress[i] = (byte) Integer.parseInt(byte_src[i], 16);
-					}
-
-					String[] byte_dst = dst.split("-");
-					for (int i = 0; i < 6; i++) {
-						dstAddress[i] = (byte) Integer.parseInt(byte_dst[i], 16);
-					}
-
-//					((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetSrcAddress(srcAddress);
-//					((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetDstAddress(dstAddress);
-
-					((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(selected_index);
-
-					Setting_Button.setText("Reset");
-					dstMacAddress.setEditable(false);
-				}
-
-			}
-		});
-		Setting_Button.setBounds(418, 218, 87, 20);
-		pane.add(Setting_Button);// setting
-
-		File_select_Button = new JButton("File select");// 파일 선택
-		File_select_Button.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				if (Setting_Button.getText() == "Reset") {
-
-//					fd = new FileDialog(ChatFileDlg.this, "파일선택", FileDialog.LOAD);
-//					fd.setVisible(true);
-
-					if (fd.getFile() != null) {
-						path = fd.getDirectory() + fd.getFile();
-						FileDir_path.setText("" + path);
-					}
-				} else {
-					JOptionPane.showMessageDialog(null, "주소 설정 오류", "WARNING_MESSAGE", JOptionPane.WARNING_MESSAGE);
-				}
-			}
-		});
-		File_select_Button.setBounds(75, 311, 161, 21);// 파일 선택위치 280
-		pane.add(File_select_Button);
-
-		Chat_send_Button = new JButton("Send");
-		Chat_send_Button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (Setting_Button.getText() == "Reset") {
-					String input = ChattingWrite.getText();
-
-					ChattingArea.append("[SEND] : " + input + "\n");
+					TotalArea.append("[SEND] : " + input + "\n");
 
 					byte[] type = new byte[2];
 					type[0] = 0x08;
@@ -191,62 +111,83 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 				}
 			}
 		});
-		Chat_send_Button.setBounds(383, 249, 161, 21);
-		pane.add(Chat_send_Button);
+		btnIPSend.setBounds(324, 307, 107, 32);
+		ARP_Cache.add(btnIPSend);
 
-		NIC_select_Button = new JButton("Select");
-		NIC_select_Button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String selected = comboBox.getSelectedItem().toString();
-				selected_index = comboBox.getSelectedIndex();
-				srcMacAddress.setText("");
-				try {
-					byte[] MacAddress = ((NILayer) m_LayerMgr.GetLayer("NI")).GetAdapterObject(selected_index)
-							.getHardwareAddress();
-					String hexNumber;
-					for (int i = 0; i < 6; i++) {
-						hexNumber = Integer.toHexString(0xff & MacAddress[i]);
-						srcMacAddress.append(hexNumber.toUpperCase());
-						if (i != 5)
-							srcMacAddress.append("-");
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		btnItemDelete = new JButton("Item Delete");
+
+		btnItemDelete.setBounds(35, 263, 165, 35);
+		ARP_Cache.add(btnItemDelete);
+		
+		JLabel lblIp = new JLabel("IP \uC8FC\uC18C");
+		lblIp.setBounds(14, 310, 56, 27);
+		ARP_Cache.add(lblIp);
+		
+		JPanel Proxy_Entry = new JPanel();
+		Proxy_Entry.setToolTipText("Proxy ARP Entry");
+		Proxy_Entry.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Proxy ARP Entry", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		Proxy_Entry.setBounds(486, 12, 466, 273);
+		getContentPane().add(Proxy_Entry);
+		Proxy_Entry.setLayout(null);
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setEditable(false);
+		textArea.setBounds(14, 30, 430, 173);
+		Proxy_Entry.add(textArea);
+		
+		JButton btnAdd = new JButton("Add");
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {  //Add 버튼 눌릴시 팝업
+				
+				String[] selections = {"Host B", "Host C", "Host D"};
+				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry 추가", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
+				JOptionPane.showInputDialog(null, "IP 주소","Proxy ARP Entry 추가",3);
+				JOptionPane.showInputDialog(null, "Ethernet 주소","Proxy ARP Entry 추가",3);
+				
 			}
 		});
-
-		NIC_select_Button.setBounds(418, 69, 87, 23);
-		pane.add(NIC_select_Button);
-
-		File_send_Button = new JButton("File Send");
-		File_send_Button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (Setting_Button.getText() == "Reset") {
-					byte[] type = new byte[2];
-					type[0] = 0x08;
-					type[1] = 0x30;
-//					((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetType(type);
-
-					String filepath = FileDir_path.getText();
-					System.out.println(filepath);
-					m_LayerMgr.GetLayer("File").Send(filepath);
-					// p_UnderLayer.Send(filename);
-				}
-
-				else {
-					JOptionPane.showMessageDialog(null, "주소 설정 오류");
-				}
+		
+		btnAdd.setBounds(42, 215, 165, 35);
+		Proxy_Entry.add(btnAdd);
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.setBounds(249, 215, 165, 35);
+		Proxy_Entry.add(btnDelete);
+		
+		JMenu mnNewMenu = new JMenu("New menu");
+		mnNewMenu.setBounds(-206, 226, 375, 183);
+		Proxy_Entry.add(mnNewMenu);
+		
+		JButton btnEnd = new JButton("\uC885\uB8CC");
+		btnEnd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		File_send_Button.setBounds(322, 311, 161, 23);
-		pane.add(File_send_Button);
-
-		comboBox = new JComboBox();
-
-		comboBox.setBounds(380, 38, 170, 24);
-		pane.add(comboBox);
+		btnEnd.setBounds(307, 383, 165, 35);
+		getContentPane().add(btnEnd);
+		
+		JButton btnCancel = new JButton("\uCDE8\uC18C");
+		btnCancel.setBounds(492, 383, 165, 35);
+		getContentPane().add(btnCancel);
+		
+		JPanel GratuitousARP = new JPanel();
+		GratuitousARP.setBorder(new TitledBorder(null, "Gratuitous ARP", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		GratuitousARP.setBounds(486, 295, 466, 83);
+		getContentPane().add(GratuitousARP);
+		GratuitousARP.setLayout(null);
+		
+		JLabel lblHw = new JLabel("H/W \uC8FC\uC18C");
+		lblHw.setBounds(14, 36, 70, 18);
+		GratuitousARP.add(lblHw);
+		
+		H_WAddressWrite = new JTextField();
+		H_WAddressWrite.setColumns(10);
+		H_WAddressWrite.setBounds(83, 29, 239, 32);
+		GratuitousARP.add(H_WAddressWrite);
+		
+		JButton button_2 = new JButton("Send");
+		button_2.setBounds(340, 29, 107, 32);
+		GratuitousARP.add(button_2);
 
 		setVisible(true);
 
@@ -262,15 +203,15 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 			System.err.printf("Can't read list of devices, error is %s", errbuf.toString());
 			return;
 		}
-		for (int i = 0; i < m_pAdapterList.size(); i++)
-			this.comboBox.addItem(m_pAdapterList.get(i).getDescription());
+//		for (int i = 0; i < m_pAdapterList.size(); i++)
+//			this.comboBox.addItem(m_pAdapterList.get(i).getDescription());
 	}
 	
 	
 	public boolean Receive(byte[] input) {
 		byte[] data = input;
 		String Text = new String(data);
-		ChattingArea.append("[RECV] : " + Text + "\n");
+		TotalArea.append("[RECV] : " + Text + "\n");
 		return false;
 	}
 
