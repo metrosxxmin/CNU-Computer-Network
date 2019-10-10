@@ -6,7 +6,7 @@ public class EthernetLayer implements BaseLayer {
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-
+	public final static int HEARER_SIZE = 14;
 	private class _ETHERNET_ADDR {
 		private byte[] addr = new byte[6];
 
@@ -56,7 +56,7 @@ public class EthernetLayer implements BaseLayer {
 
 
 	public byte[] ObjToByteDATA(_ETHERNET_HEADER Header, byte[] input, int length) {
-		byte[] buf = new byte[length + 14];
+		byte[] buf = new byte[length + HEARER_SIZE];
 
 		buf[0] = Header.enet_dstaddr.addr[0];
 		buf[1] = Header.enet_dstaddr.addr[1];
@@ -74,7 +74,7 @@ public class EthernetLayer implements BaseLayer {
 		buf[13] = Header.enet_type[1];
 		
 		for (int i = 0; i < length; i++) {
-			buf[14 + i] = input[i];
+			buf[HEARER_SIZE + i] = input[i];
 
 		}
 
@@ -111,19 +111,19 @@ public class EthernetLayer implements BaseLayer {
 
 		byte[] frame = ObjToByteDATA(m_sHeader,input,length);
 
-		GetUnderLayer().Send(frame,length+14);
+		GetUnderLayer().Send(frame,length+HEARER_SIZE);
 
 		return false;
 	}
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
 
-		byte[] rebuf = new byte[length-14];
-		m_sHeader.enet_data = new byte[length-14];
+		byte[] rebuf = new byte[length-HEARER_SIZE];
+		m_sHeader.enet_data = new byte[length-HEARER_SIZE];
 
-		for (int i = 0; i < length-14; i++) {
-			m_sHeader.enet_data[i] = input[14 + i];
-			rebuf[i] = input[14 + i];
+		for (int i = 0; i < length-HEARER_SIZE; i++) {
+			m_sHeader.enet_data[i] = input[HEARER_SIZE + i];
+			rebuf[i] = input[HEARER_SIZE + i];
 		}
 		return rebuf;
 	}
