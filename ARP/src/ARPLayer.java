@@ -1,18 +1,24 @@
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import org.jnetpcap.Pcap;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 
 
 public class ARPLayer implements BaseLayer {
-
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
 	HashMap< byte[], Object[] > cacheTable = new HashMap<byte[], Object[]>();
-
-	_ARP_HEADER m_sHeader = new _ARP_HEADER();
-
+	
+	private byte[] arp_mac_srcaddr = null;
+	private byte[] arp_mac_dstaddr = null;
+	
 	// inner class for dealing with Mac address
 	private class _ARP_MAC_ADDR {
 		private byte[] addr = new byte[6];
@@ -39,7 +45,6 @@ public class ARPLayer implements BaseLayer {
 		}
 	}
 
-	// inner class for dealing with ARP header
 	private class _ARP_HEADER {
 		byte[] arp_hwType;
 		byte[] arp_protoAddrType;
@@ -50,7 +55,7 @@ public class ARPLayer implements BaseLayer {
 		_ARP_PROTOCOL_ADDR _arp_protocol_srcaddr;
 		_ARP_MAC_ADDR _arp_mac_dstaddr;
 		_ARP_PROTOCOL_ADDR _arp_protocol_dstaddr;	// first sending, it's empty.
-
+		
 		public _ARP_HEADER() {
 			arp_hwType = new byte[2];
 			arp_protoAddrType = new byte[2];
@@ -63,207 +68,126 @@ public class ARPLayer implements BaseLayer {
 			_arp_protocol_dstaddr = new _ARP_PROTOCOL_ADDR();
 		}
 	}
+	
+	_ARP_HEADER m_sHeader = new _ARP_HEADER();
 
-	public void SetIPAddress(byte[] input) {
-		// TODO Auto-generated method stub
-		m_sHeader._arp_protocol_srcaddr.addr[0] = input[0];
-		m_sHeader._arp_protocol_srcaddr.addr[1] = input[1];
-		m_sHeader._arp_protocol_srcaddr.addr[2] = input[2];
-		m_sHeader._arp_protocol_srcaddr.addr[3] = input[3];
-
-		m_sHeader._arp_protocol_dstaddr.addr[0] = input[4];
-		m_sHeader._arp_protocol_dstaddr.addr[1] = input[5];
-		m_sHeader._arp_protocol_dstaddr.addr[2] = input[6];
-		m_sHeader._arp_protocol_dstaddr.addr[3] = input[7];
-
+	public ARPLayer(String pName) {
+		// super(pName);
+		// TODO Auto-generated constructor stub
+		pLayerName = pName;
+		m_sHeader = new _ARP_HEADER();
 	}
 
-	public void SetMacSrcAddress(byte[] srcAddress) {
-		// TODO Auto-generated method stub
-		m_sHeader._arp_mac_srcaddr.addr[0]= srcAddress[0];
-		m_sHeader._arp_mac_srcaddr.addr[1]= srcAddress[1];
-		m_sHeader._arp_mac_srcaddr.addr[2]= srcAddress[2];
-		m_sHeader._arp_mac_srcaddr.addr[3]= srcAddress[3];
-		m_sHeader._arp_mac_srcaddr.addr[4]= srcAddress[4];
-		m_sHeader._arp_mac_srcaddr.addr[5]= srcAddress[5];
-	}
-
-
-
-
-	public byte[] ObjToByteMessage(_ARP_HEADER Header) {
-		byte[] buf = new byte[32];
-
-		buf[0]= m_sHeader.arp_hwType[0];
-		buf[1]= m_sHeader.arp_hwType[1];
-		buf[2]= m_sHeader.arp_protoAddrType[0];
-		buf[3]= m_sHeader.arp_protoAddrType[1];
-		buf[4]= m_sHeader.arp_hwAddrLength[0];
-		buf[5]= m_sHeader.arp_protoAddrLength[0];
-		buf[6]= m_sHeader.arp_opcode[0];
-		buf[7]= m_sHeader.arp_opcode[1];
-
-		for (int i = 0; i < 6; i++) buf[8 + i] = m_sHeader._arp_mac_srcaddr.addr[i];
-		for (int i = 0; i < 4; i++) buf[14 + i] = m_sHeader._arp_protocol_srcaddr.addr[i];
-		for (int i = 0; i < 6; i++) buf[18 + i] = m_sHeader._arp_mac_dstaddr.addr[i];
-		for (int i = 0; i < 4; i++) buf[24 + i] = m_sHeader._arp_protocol_dstaddr.addr[i];
-
+	public byte[] ObjToByte(_ARP_HEADER m_sHeader) {
+		byte[] buf = new byte[28];
+		
+		buf[0] = m_sHeader.arp_hwType[0];
+		buf[1] = m_sHeader.arp_hwType[1];
+		buf[2] = m_sHeader.arp_protoAddrType[0];
+		buf[3] = m_sHeader.arp_protoAddrType[1];
+		buf[4] = m_sHeader.arp_hwAddrLength[0];
+		buf[5] = m_sHeader.arp_protoAddrLength[0];
+		buf[6] = m_sHeader.arp_opcode[0];
+		buf[7] = m_sHeader.arp_opcode[1];
+		for(int i= 0;i<6;i++) {
+			buf[i+8]=m_sHeader._arp_mac_srcaddr.addr[i];
+			buf[i+18] = m_sHeader._arp_mac_dstaddr.addr[i];
+		}
+		for(int i=0;i<4;i++) {
+			buf[i+14] = m_sHeader._arp_protocol_srcaddr.addr[i];
+			buf[i+24] = m_sHeader._arp_protocol_dstaddr.addr[i];
+		}
+		
 		return buf;
 	}
 
-	public boolean Send(byte[] input, int length) {
-
-		byte[]dstIP = new byte[4];
+	/*
+	 * IP Layer에서 호출되는 Send일 경우, opcode는  1이며, ARP Layer에서 호출되는 Send일 경우 opcode는 2다.
+	 */
+	public boolean Send(byte[] arp_protocol_srcaddr, byte[] arp_protocol_dstaddr, byte[] arp_opcode) {
 
 		Object[] value = new Object[3];
-
-		dstIP[0] = input[4];
-		dstIP[1] = input[5];
-		dstIP[2] = input[6];
-		dstIP[3] = input[7];
-
-		if(cacheTable.containsKey(dstIP)) {
-			//			value = cacheTable.get(dstIP);
-			//			if(value[3].equals("Complete")) {
-			//				return true;
-			//			}
-			return true;
+		
+		if(arp_opcode[0]==(byte)0x00 && arp_opcode[1]==(byte)0x01) { 
+			
+			if(cacheTable.containsKey(arp_protocol_dstaddr)) return true; 
+			
+			value[0]= cacheTable.size();			// ARP-request Send ("Incomplete")
+			value[1]= m_sHeader._arp_mac_dstaddr;
+			value[2]="Incomplete";
+			cacheTable.put(arp_protocol_dstaddr, value);
+			
 		}
-
-		//send 보낸게 IP Layer인데, 상대방의 Mac주소를 모르는 경우 
-		value[0] = cacheTable.size();
-		value[1] = m_sHeader._arp_mac_dstaddr;
-		value[2] = "Incomplete";
-
-		cacheTable.put(dstIP, value);
-
-		m_sHeader.arp_hwType[0] = 0;
-		m_sHeader.arp_hwType[1] = 1; 
-
-
-		m_sHeader.arp_protoAddrType[0]= 0x08;
-		m_sHeader.arp_protoAddrType[1]= 0x00;
-
-		m_sHeader.arp_hwAddrLength[0] = 6;
-
-		m_sHeader.arp_protoAddrLength[0] = 4;
-
-		m_sHeader.arp_opcode[0]=0x00;
-		m_sHeader.arp_opcode[1]=0x01;
-
-		//src,dst 주소 저장하기
-		//ip주소는 IP Layer에서 받고, IP헤더에서 찾는다고 가정
-		//src mac주소는 GUI에서 이더넷에게 전달할때 ARP한테도 전달하도록 한다고 가정
-
-		SetIPAddress(input);
-
-		byte[] message = ObjToByteMessage(m_sHeader);
-
-		GetUnderLayer().Send(message, message.length);
-
-		return true;
-
-	}
-
-	public boolean Send(byte[] input) {
-
-		byte[] temp = new byte[10];
-
-		//swapping
-		for (int i = 0; i < 10; i++) {
-			temp[i] = input[i+8];
-			input[i+8] = input[i+18];
-			input[i+18] = temp[i];
-		}
-
-		input[6]=0x00;
-		input[7]=0x02;
-
-		GetUnderLayer().Send(input, input.length);
+		
+		m_sHeader.arp_hwType[0] =(byte) 0x00; //Ethernet
+		m_sHeader.arp_hwType[1] =(byte) 0x01;
+		
+		m_sHeader.arp_protoAddrType[0] =(byte) 0x08; //IP
+		m_sHeader.arp_protoAddrType[1] =(byte) 0x00;
+		
+		m_sHeader.arp_hwAddrLength[0]=6;
+		m_sHeader.arp_protoAddrLength[0]=4;
+		
+		m_sHeader._arp_mac_srcaddr.addr = arp_mac_srcaddr;
+		m_sHeader._arp_protocol_srcaddr.addr = arp_protocol_srcaddr;
+		if(arp_mac_dstaddr!=null) m_sHeader._arp_mac_dstaddr.addr = arp_mac_dstaddr;
+		m_sHeader._arp_protocol_dstaddr.addr=arp_protocol_dstaddr;
+		
+		m_sHeader.arp_opcode = arp_opcode;
+		
+		byte[] bytes = ObjToByte(m_sHeader);		
+		(this.GetUnderLayer()).Send(bytes,bytes.length);
 
 		return true;
 	}
 
-	public boolean Receive(byte[] input) {
+	
 
-		if(input[6]==0x00 && input[7]==0x02) { //Reply Opcode = 2
-
-			byte[]dstIP = new byte[4];
-			byte[]dstMac = new byte[6];
-
-			Object[] value = new Object[3];
-
-			dstIP[0] = input[24];
-			dstIP[1] = input[25];
-			dstIP[2] = input[26];
-			dstIP[3] = input[27];
-
-			for(int i=0 ; i<6; i++) dstMac[i] = input[18+i];
-
-			value[0] = cacheTable.get(dstIP)[0];
-			value[1] = dstMac;
-			value[2] = "Complete";
-
-			cacheTable.replace(dstIP, value);
-
-		}else if(input[6]==0x00 && input[7]==0x01) { //Request Opcode = 1
-
-			byte[]dstIP = new byte[4];
-			byte[]dstMac = new byte[6];
-
-			Object[] value = new Object[3];
-
-			dstIP[0] = input[24];
-			dstIP[1] = input[25];
-			dstIP[2] = input[26];
-			dstIP[3] = input[27];
-
-			for(int i=0 ; i<6; i++) dstMac[i] = input[18+i];
-
-			if(cacheTable.containsKey(dstIP)) {
-				value[0] = cacheTable.get(dstIP)[0];
-			}else {
-				value[0] = cacheTable.size();
-			}
-
-			value[1] = dstMac;
-			value[2] = "Complete";
-
-			//src mac주소 Cache 테이블에 업데이트
+	public synchronized boolean Receive(byte[] input, int length) {
+		byte[] message = input;
+		
+		Object[] value = new Object[3];
+		byte[] dstIP = new byte[4];
+		byte[] dstMac = new byte[6];
+		
+		System.arraycopy(message, 14, dstIP, 0, 4); 
+		System.arraycopy(message, 8, dstMac, 0, 6);
+		
+		if(message[6]==(byte)0x00 && message[7] ==(byte)0x01) { // ARP-request Receive ("Complete")
+			
+			value[0]=cacheTable.size();
+			value[1]= dstMac;
+			value[2]= "Complete";
+			
 			cacheTable.put(dstIP, value);
-
-			for(int i = 0;i<4;i++) {
-				if(input[i+24]!= m_sHeader._arp_protocol_srcaddr.addr[i]) {
-					//dst protocal add가 본인이 아니면  무시
-					return false;
-				}
+			
+			for(int i=0;i<4;i++) {
+				if(message[i+24] != m_sHeader._arp_protocol_srcaddr.addr[i]) return false;
 			}
-
-			for (int i = 0; i < 6; i++) {
-				input[18 + i] = m_sHeader._arp_mac_srcaddr.addr[i];
-			}
-
-			Send(input);
+			
+			byte[] newOp = new byte[2];
+			newOp[0] =(byte) 0x00;
+			newOp[1] =(byte) 0x02;
+			byte[] target_IP = new byte[4];
+			byte[] target_ENET= new byte[6];
+			System.arraycopy(message, 8, target_ENET, 0, 6);
+			System.arraycopy(message, 14, target_IP, 0, 4);
+			
+			SetMacAddrSrcAddr(target_ENET);
+			SetMacAddrDstAddr(arp_mac_srcaddr);
+			
+			Send(m_sHeader._arp_protocol_srcaddr.addr, target_IP, newOp);
+		
+		}else if(message[6]==(byte)0x00 && message[7] ==(byte)0x02) { //ARP-reply Receive ("Incomplete" -> "Complete")
+			value[0]= cacheTable.get(dstIP)[0];
+			value[1]= dstMac;
+			value[2]="Complete";
+			cacheTable.replace(dstIP, value);
 		}
-		return true;
+		return false;
+		
 	}
-
-
-
-	@Override
-	public void SetUnderLayer(BaseLayer pUnderLayer) {
-		if (pUnderLayer == null)
-			return;
-		p_UnderLayer = pUnderLayer;
-	}
-
-	@Override
-	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		if (pUpperLayer == null)
-			return;
-		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
-		// nUpperLayerCount++;
-	}
+	
 
 	@Override
 	public String GetLayerName() {
@@ -273,6 +197,7 @@ public class ARPLayer implements BaseLayer {
 
 	@Override
 	public BaseLayer GetUnderLayer() {
+		// TODO Auto-generated method stub
 		if (p_UnderLayer == null)
 			return null;
 		return p_UnderLayer;
@@ -280,9 +205,26 @@ public class ARPLayer implements BaseLayer {
 
 	@Override
 	public BaseLayer GetUpperLayer(int nindex) {
+		// TODO Auto-generated method stub
 		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
 			return null;
 		return p_aUpperLayer.get(nindex);
+	}
+
+	@Override
+	public void SetUnderLayer(BaseLayer pUnderLayer) {
+		// TODO Auto-generated method stub
+		if (pUnderLayer == null)
+			return;
+		this.p_UnderLayer = pUnderLayer;
+	}
+
+	@Override
+	public void SetUpperLayer(BaseLayer pUpperLayer) {
+		// TODO Auto-generated method stub
+		if (pUpperLayer == null)
+			return;
+		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
 	}
 
 	@Override
@@ -290,4 +232,12 @@ public class ARPLayer implements BaseLayer {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 	}
+	
+	public void SetMacAddrSrcAddr(byte[] srcaddr) {
+		this.arp_mac_srcaddr =srcaddr;
+	}
+	public void SetMacAddrDstAddr(byte[] dstaddr) {
+		this.arp_mac_dstaddr=dstaddr;
+	}
 }
+
