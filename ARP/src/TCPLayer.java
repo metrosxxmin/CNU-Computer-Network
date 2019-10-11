@@ -44,7 +44,7 @@ public class TCPLayer implements BaseLayer {
     }
 
     public byte[] objToByte(_TCPLayer_HEADER Header,byte[] input,int length){
-        byte[] buf = new byte[length+20];
+        byte[] buf = new byte[length+24];
 
         buf[0]=Header.tcp_sport[0];
         buf[1]=Header.tcp_sport[1];
@@ -66,16 +66,21 @@ public class TCPLayer implements BaseLayer {
         buf[17]=Header.tcp_cksum[1];
         buf[18]=Header.tcp_urgptr[0];
         buf[19]=Header.tcp_urgptr[1];
+        buf[20]=Header.Padding[0];
+        buf[21]=Header.Padding[1];
+        buf[22]=Header.Padding[2];
+        buf[23]=Header.Padding[3];
 
         for(int i=0;i<length;i++){
-            buf[20+i]=input[i];
+            buf[24+i]=input[i];
         }
 
         return buf;
 
     }
 
-    public synchronized boolean send(byte[] input, int length) {
+    public synchronized boolean Send(byte[] input, int length) {
+    	System.out.println("TCP µé¾î¿È");
         byte[] data = objToByte(m_sHeader,input,length);
 
         this.GetUnderLayer().Send(data,length+20);

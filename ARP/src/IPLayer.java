@@ -71,6 +71,7 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
+		System.out.println("IP µé¾î¿È");
 		byte[] bytes = ObjToByte(m_sHeader,input,length);
 		
 		byte[] opcode = new byte[2];
