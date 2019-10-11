@@ -46,7 +46,7 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public byte[] ObjToByte(_IPLayer_HEADER Header, byte[] input, int length) {
-		byte[] buf = new byte[length + 4];
+		byte[] buf = new byte[length + 20];
 
 		buf[0] = Header.ip_versionLen[0];
 		buf[1] = Header.ip_serviceType[0];
