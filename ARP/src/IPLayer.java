@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 
-
 public class IPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
@@ -43,6 +42,24 @@ public class IPLayer implements BaseLayer {
 		// TODO Auto-generated constructor stub
 		pLayerName = pName;
 		m_sHeader = new _IPLayer_HEADER(); 
+	}
+	
+	public void SetIPSrcAddress(byte[] srcAddress) {
+		// TODO Auto-generated method stub
+		m_sHeader.ip_srcaddr[0]= srcAddress[0];
+		m_sHeader.ip_srcaddr[1]= srcAddress[1];
+		m_sHeader.ip_srcaddr[2]= srcAddress[2];
+		m_sHeader.ip_srcaddr[3]= srcAddress[3];
+
+	}
+
+	public void SetIPDstAddress(byte[] dstAddress) {
+		// TODO Auto-generated method stub
+		m_sHeader.ip_dstaddr[0]= dstAddress[0];
+		m_sHeader.ip_dstaddr[1]= dstAddress[1];
+		m_sHeader.ip_dstaddr[2]= dstAddress[2];
+		m_sHeader.ip_dstaddr[3]= dstAddress[3];
+
 	}
 
 	public byte[] ObjToByte(_IPLayer_HEADER Header, byte[] input, int length) {
