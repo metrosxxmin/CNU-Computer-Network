@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +15,7 @@ public class ARPLayer implements BaseLayer {
 
 	HashMap< byte[], Object[] > cacheTable = new HashMap<byte[], Object[]>();
 	
-	private byte[] arp_mac_srcaddr = null;
+	private static byte[] arp_mac_srcaddr = null;
 	private byte[] arp_mac_dstaddr = null;
 	
 	// inner class for dealing with Mac address
@@ -75,7 +74,7 @@ public class ARPLayer implements BaseLayer {
 		// super(pName);
 		// TODO Auto-generated constructor stub
 		pLayerName = pName;
-		m_sHeader = new _ARP_HEADER();
+		//m_sHeader = new _ARP_HEADER();
 	}
 
 	public byte[] ObjToByte(_ARP_HEADER m_sHeader) {
@@ -233,8 +232,8 @@ public class ARPLayer implements BaseLayer {
 		pUULayer.SetUnderLayer(this);
 	}
 	
-	public void SetMacAddrSrcAddr(byte[] srcaddr) {
-		this.arp_mac_srcaddr =srcaddr;
+	public static void SetMacAddrSrcAddr(byte[] srcaddr) {
+		arp_mac_srcaddr =srcaddr;
 	}
 	public void SetMacAddrDstAddr(byte[] dstaddr) {
 		this.arp_mac_dstaddr=dstaddr;

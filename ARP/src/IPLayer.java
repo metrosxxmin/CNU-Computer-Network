@@ -85,9 +85,9 @@ public class IPLayer implements BaseLayer {
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
 		
-		byte[] remvHeader = new byte[length-4];
-		for(int i=0;i<length-4;i++) {
-			remvHeader[i] = input[i+4];
+		byte[] remvHeader = new byte[length-20];
+		for(int i=0;i<length-20;i++) {
+			remvHeader[i] = input[i+20];
 		}
 		return remvHeader;// 변경하세요 필요하시면
 	}

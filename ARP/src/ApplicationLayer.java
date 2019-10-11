@@ -6,6 +6,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +98,25 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnAllDelete.setBounds(240, 263, 165, 35);
 		ARP_Cache.add(btnAllDelete);
 
+		InetAddress ip;
+		try {
+			ip = InetAddress.getLocalHost();
+					NetworkInterface netif = NetworkInterface.getByInetAddress(ip);
+
+					if (netif != null) {
+						// get mac address
+						byte[] mac = netif.getHardwareAddress();
+						ARPLayer.SetMacAddrSrcAddr(mac);
+				
+					}
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		btnIPSend = new JButton("Send");
 		btnIPSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
