@@ -106,6 +106,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 				if (IPAddressWrite.getText() != "") {
 					String input = IPAddressWrite.getText();
 
+
 					//TotalArea.append(input + "\t"+"??????????\t incomplete\n");
 					//((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetType(type);
 
@@ -123,10 +124,15 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr_src);
 					
 					p_UnderLayer.Send(bytes, bytes.length);
-					//					 System.out.println("TCP∑Œ "+input +" Send");
+					//					 System.out.println("TCPÎ°ú "+input +" Send");
+          
+					byte[] bytes = input.getBytes();
+					 p_UnderLayer.Send(bytes, bytes.length);
+//					 System.out.println("TCPÎ°ú "+input +" Send");
+
 				} 
 				else {
-					JOptionPane.showMessageDialog(null, "¡÷º“ º≥¡§ ø¿∑˘");
+					JOptionPane.showMessageDialog(null, "Ï£ºÏÜå ÏÑ§Ï†ï Ïò§Î•ò");
 				}
 			}
 		});
@@ -157,12 +163,12 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		JButton btnAdd = new JButton("Add");
 		btnAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {  
-				new Second_Popup(); //Add πˆ∆∞ ¥≠∏±Ω√ µŒπ¯¬∞ ∆Àæ˜√¢ ø≠±‚
+				new Second_Popup(); //Add Î≤ÑÌäº ÎàåÎ¶¥Ïãú ÎëêÎ≤àÏß∏ ÌåùÏóÖÏ∞Ω Ïó¥Í∏∞
 
 				String[] selections = {"Host B", "Host C", "Host D"};
-				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry √ﬂ∞°", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
-				//				JOptionPane.showInputDialog(null, "IP ¡÷º“","Proxy ARP Entry √ﬂ∞°",3);
-				//				JOptionPane.showInputDialog(null, "Ethernet ¡÷º“","Proxy ARP Entry √ﬂ∞°",3);
+				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry Ï∂îÍ∞Ä", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
+				//				JOptionPane.showInputDialog(null, "IP Ï£ºÏÜå","Proxy ARP Entry Ï∂îÍ∞Ä",3);
+				//				JOptionPane.showInputDialog(null, "Ethernet Ï£ºÏÜå","Proxy ARP Entry Ï∂îÍ∞Ä",3);
 
 			}
 		});
@@ -178,7 +184,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		mnNewMenu.setBounds(-206, 226, 375, 183);
 		Proxy_Entry.add(mnNewMenu);
 
-		JButton btnEnd = new JButton("\uC885\uB8CC");  //¡æ∑·πˆ∆∞
+		JButton btnEnd = new JButton("\uC885\uB8CC");  //Ï¢ÖÎ£åÎ≤ÑÌäº
 		btnEnd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -192,7 +198,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 			}
 		});
 
-		JButton btnCancel = new JButton("\uCDE8\uC18C");  //√Îº“πˆ∆∞
+		JButton btnCancel = new JButton("\uCDE8\uC18C");  //Ï∑®ÏÜåÎ≤ÑÌäº
 		btnCancel.setBounds(492, 383, 165, 35);
 		getContentPane().add(btnCancel);
 		btnCancel.addActionListener(new ActionListener() {
