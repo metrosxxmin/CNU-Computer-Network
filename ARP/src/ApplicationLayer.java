@@ -123,11 +123,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 				if (IPAddressWrite.getText() != "") {
 					String input = IPAddressWrite.getText();
 
-					TotalArea.append(input + "\t"+"??????????\t incomplete\n");
-					//((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetType(type);
-
 					byte[] bytes = input.getBytes();
-//					m_LayerMgr.GetLayer("TCP").Send(bytes, bytes.length);
 					 p_UnderLayer.Send(bytes, bytes.length);
 //					 System.out.println("TCP·Î "+input +" Send");
 				} 
