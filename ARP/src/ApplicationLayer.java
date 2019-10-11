@@ -16,6 +16,7 @@ import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
+
 import java.awt.Panel;
 import java.awt.BorderLayout;
 import javax.swing.border.TitledBorder;
@@ -51,11 +52,14 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	private final JPopupMenu popupMenu = new JPopupMenu();
 
 	public static void main(String[] args) {
-//		m_LayerMgr.AddLayer(new NILayer("NI"));
 		
 		m_LayerMgr.AddLayer(new ApplicationLayer("GUI"));
-
-		//m_LayerMgr.ConnectLayers( );
+		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
+		m_LayerMgr.AddLayer(new IPLayer("IP"));
+		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
+		m_LayerMgr.AddLayer(new EthernetLayer("Ethernet"));
+		m_LayerMgr.AddLayer(new NILayer("NI"));
+		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP (  *IP ( *TCP ( *GUI ) ) ) ");
 	}
 
 	public ApplicationLayer(String pName) {
@@ -93,20 +97,18 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnIPSend = new JButton("Send");
 		btnIPSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if (btnAllDelete.getText() == "Reset") {
+				if (IPAddressWrite.getText() != "") {
 					String input = IPAddressWrite.getText();
 
-					TotalArea.append("[SEND] : " + input + "\n");
-
-					byte[] type = new byte[2];
-					type[0] = 0x08;
-					type[1] = 0x20;
+					TotalArea.append(input + "\t"+"??????????\t incomplete\n");
 					//((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetType(type);
 
 					byte[] bytes = input.getBytes();
-					m_LayerMgr.GetLayer("Chat").Send(bytes, bytes.length);
-					// p_UnderLayer.Send(bytes, bytes.length);
-				} else {
+//					m_LayerMgr.GetLayer("TCP").Send(bytes, bytes.length);
+					 p_UnderLayer.Send(bytes, bytes.length);
+//					 System.out.println("TCP로 "+input +" Send");
+				} 
+				else {
 					JOptionPane.showMessageDialog(null, "주소 설정 오류");
 				}
 			}
@@ -137,12 +139,13 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		
 		JButton btnAdd = new JButton("Add");
 		btnAdd.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {  //Add 버튼 눌릴시 팝업
+			public void actionPerformed(ActionEvent e) {  
+				new Second_Popup(); //Add 버튼 눌릴시 두번째 팝업창 열기
 				
 				String[] selections = {"Host B", "Host C", "Host D"};
-				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry 추가", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
-				JOptionPane.showInputDialog(null, "IP 주소","Proxy ARP Entry 추가",3);
-				JOptionPane.showInputDialog(null, "Ethernet 주소","Proxy ARP Entry 추가",3);
+//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry 추가", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
+//				JOptionPane.showInputDialog(null, "IP 주소","Proxy ARP Entry 추가",3);
+//				JOptionPane.showInputDialog(null, "Ethernet 주소","Proxy ARP Entry 추가",3);
 				
 			}
 		});
@@ -158,17 +161,29 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		mnNewMenu.setBounds(-206, 226, 375, 183);
 		Proxy_Entry.add(mnNewMenu);
 		
-		JButton btnEnd = new JButton("\uC885\uB8CC");
+		JButton btnEnd = new JButton("\uC885\uB8CC");  //종료버튼
 		btnEnd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
 		btnEnd.setBounds(307, 383, 165, 35);
 		getContentPane().add(btnEnd);
+		btnEnd.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+				System.exit(0);
+			}
+		});
 		
-		JButton btnCancel = new JButton("\uCDE8\uC18C");
+		JButton btnCancel = new JButton("\uCDE8\uC18C");  //취소버튼
 		btnCancel.setBounds(492, 383, 165, 35);
 		getContentPane().add(btnCancel);
+		btnCancel.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+				System.exit(0);
+			}
+		});
 		
 		JPanel GratuitousARP = new JPanel();
 		GratuitousARP.setBorder(new TitledBorder(null, "Gratuitous ARP", TitledBorder.LEADING, TitledBorder.TOP, null, null));
