@@ -158,12 +158,13 @@ public class ARPLayer implements BaseLayer {
 
 		if(message[6]==(byte)0x00 && message[7] ==(byte)0x01) { // ARP-request Receive ("Complete")
 
-			value[0]=cacheTable.size();
-			value[1]= dstMac;
-			value[2]= "Complete";
-
-			cacheTable.put(dstIP, value);
-
+			if(!cacheTable.containsKey(dstIP)) {
+				value[0]=cacheTable.size();
+				value[1]= dstMac;
+				value[2]= "Complete";				
+				cacheTable.put(dstIP, value);
+			}
+			
 			for(int i=0;i<4;i++) {
 				if(message[i+24] != m_sHeader._arp_protocol_srcaddr.addr[i]) return false;
 			}

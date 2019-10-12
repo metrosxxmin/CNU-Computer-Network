@@ -10,6 +10,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.sound.sampled.AudioFormat.Encoding;
@@ -35,6 +36,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 	String path;
 	private byte[] ipAddr_src;
+	JTextArea proxyArea;
 
 	private static LayerManager m_LayerMgr = new LayerManager();
 	int selected_index;
@@ -50,6 +52,9 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 	FileDialog fd;
 	private JTextField H_WAddressWrite;
+	
+	HashMap<String, Object[]> proxyTable = new HashMap<String, Object[]>();
+
 	/**
 	 * @wbp.nonvisual location=108,504
 	 */
@@ -124,15 +129,15 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr_src);
 					
 					p_UnderLayer.Send(bytes, bytes.length);
-					//					 System.out.println("TCP로 "+input +" Send");
+					//					 System.out.println("TCP濡� "+input +" Send");
           
 					byte[] bytes = input.getBytes();
 					 p_UnderLayer.Send(bytes, bytes.length);
-//					 System.out.println("TCP로 "+input +" Send");
+//					 System.out.println("TCP濡� "+input +" Send");
 
 				} 
 				else {
-					JOptionPane.showMessageDialog(null, "주소 설정 오류");
+					JOptionPane.showMessageDialog(null, "二쇱냼 �꽕�젙 �삤瑜�");
 				}
 			}
 		});
@@ -155,20 +160,19 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		getContentPane().add(Proxy_Entry);
 		Proxy_Entry.setLayout(null);
 
-		JTextArea textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setBounds(14, 30, 430, 173);
-		Proxy_Entry.add(textArea);
+		proxyArea = new JTextArea();
+		proxyArea.setEditable(false);
+		proxyArea.setBounds(14, 30, 430, 173);
+		Proxy_Entry.add(proxyArea);
 
 		JButton btnAdd = new JButton("Add");
 		btnAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {  
-				new Second_Popup(); //Add 버튼 눌릴시 두번째 팝업창 열기
-
-				String[] selections = {"Host B", "Host C", "Host D"};
-				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry 추가", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
-				//				JOptionPane.showInputDialog(null, "IP 주소","Proxy ARP Entry 추가",3);
-				//				JOptionPane.showInputDialog(null, "Ethernet 주소","Proxy ARP Entry 추가",3);
+				new Second_Popup(proxyTable,proxyArea); //Add 踰꾪듉 �닃由댁떆 �몢踰덉㎏ �뙘�뾽李� �뿴湲�
+				//				String[] selections = {"Host B", "Host C", "Host D"};
+				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry 異붽�", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
+				//				JOptionPane.showInputDialog(null, "IP 二쇱냼","Proxy ARP Entry 異붽�",3);
+				//				JOptionPane.showInputDialog(null, "Ethernet 二쇱냼","Proxy ARP Entry 異붽�",3);
 
 			}
 		});
@@ -184,7 +188,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		mnNewMenu.setBounds(-206, 226, 375, 183);
 		Proxy_Entry.add(mnNewMenu);
 
-		JButton btnEnd = new JButton("\uC885\uB8CC");  //종료버튼
+		JButton btnEnd = new JButton("\uC885\uB8CC");  //醫낅즺踰꾪듉
 		btnEnd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -198,7 +202,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 			}
 		});
 
-		JButton btnCancel = new JButton("\uCDE8\uC18C");  //취소버튼
+		JButton btnCancel = new JButton("\uCDE8\uC18C");  //痍⑥냼踰꾪듉
 		btnCancel.setBounds(492, 383, 165, 35);
 		getContentPane().add(btnCancel);
 		btnCancel.addActionListener(new ActionListener() {

@@ -32,12 +32,10 @@ public class Second_Popup extends JFrame {
 	JLabel lbl_mac;
 	Container contentPane;
 	String[] hostsName = {"Host B","Host C","Host D"};
-	String host = "";
-	int tableSize = 0;
-	
-	HashMap<String, Object[] > proxyTable = new HashMap<String, Object[]>();
-	
-	public Second_Popup() {
+	String host = hostsName[0];
+	int proxySize =0;
+		
+	public Second_Popup(HashMap<String, Object[] > proxyTable, JTextArea proxyArea) {
 		
 		setTitle("Proxy ARP Entry Ãß°¡");
 		setSize(450, 350);
@@ -94,7 +92,7 @@ public class Second_Popup extends JFrame {
 					byte[] ipAddress = new byte[4];
 					for (int i = 0; i < 4; i++) {
 						String ss = st.nextToken();
-						int s = Integer.parseInt(ss, 16);
+						int s = Integer.parseInt(ss);
 						ipAddress[i] = (byte) (s & 0xFF);
 					}
 					
@@ -110,8 +108,29 @@ public class Second_Popup extends JFrame {
 					value[1] = macAddress;
 					
 					proxyTable.put(hostName, value);
-					tableSize =proxyTable.size();
-					if(proxyTable.size()!=tableSize) dispose();
+					if(proxyTable.size()!=proxySize) {
+						String printResult ="";
+						for(int i=0;i<hostsName.length;i++) {
+							if(proxyTable.containsKey(hostsName[i])) {
+								printResult = printResult+"    "+hostsName[i]+"\t";
+								byte[] ip = (byte[])proxyTable.get(hostsName[i])[0];
+								byte[] mac = (byte[])proxyTable.get(hostsName[i])[1];
+								String ip_String ="";
+								String mac_String ="";
+								
+								for(int j=0;j<3;j++) ip_String = ip_String + (ip[j]&0xFF) +".";
+								ip_String = ip_String + (ip[3]&0xFF);
+								for(int j=0;j<5;j++) mac_String = mac_String + String.format("%X:",mac[j]);
+								mac_String = mac_String + String.format("%X",mac[5]);
+								
+								printResult = printResult+ip_String+"\t    "+mac_String+"\n";
+							}
+						}
+						proxySize++;
+						System.out.println(proxyTable.size()+"  "+printResult);
+						proxyArea.setText(printResult);
+						dispose();
+					}
 				}
 
 			}
