@@ -6,6 +6,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -87,8 +88,8 @@ public class Second_Popup extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				if (!inputProtocol.getText().equals("") && !inputMac.getText().equals("")) {
 					String hostName = host;
-					
 					StringTokenizer st = new StringTokenizer(inputProtocol.getText(), ".");
+					
 					byte[] ipAddress = new byte[4];
 					for (int i = 0; i < 4; i++) {
 						String ss = st.nextToken();
@@ -103,34 +104,32 @@ public class Second_Popup extends JFrame {
 						int s = Integer.parseInt(ss, 16);
 						macAddress[i] = (byte) (s & 0xFF);
 					}
-					Object[] value = new Object[2];
-					value[0] = ipAddress;
+					Object[] value = new Object[3];
+					value[0] = hostName;
 					value[1] = macAddress;
+					value[2] = ipAddress;
 					
-					proxyTable.put(hostName, value);
-					if(proxyTable.size()!=proxySize) {
-						String printResult ="";
-						for(int i=0;i<hostsName.length;i++) {
-							if(proxyTable.containsKey(hostsName[i])) {
-								printResult = printResult+"    "+hostsName[i]+"\t";
-								byte[] ip = (byte[])proxyTable.get(hostsName[i])[0];
-								byte[] mac = (byte[])proxyTable.get(hostsName[i])[1];
-								String ip_String ="";
-								String mac_String ="";
-								
-								for(int j=0;j<3;j++) ip_String = ip_String + (ip[j]&0xFF) +".";
-								ip_String = ip_String + (ip[3]&0xFF);
-								for(int j=0;j<5;j++) mac_String = mac_String + String.format("%X:",mac[j]);
-								mac_String = mac_String + String.format("%X",mac[5]);
-								
-								printResult = printResult+ip_String+"\t    "+mac_String+"\n";
-							}
-						}
-						proxySize++;
-						System.out.println(proxyTable.size()+"  "+printResult);
-						proxyArea.setText(printResult);
-						dispose();
+					proxyTable.put(inputProtocol.getText(), value);
+					String printResult ="";
+					for(Iterator iterator = proxyTable.keySet().iterator(); iterator.hasNext();) {
+						String keyIP = (String)iterator.next();
+						Object[] obj = proxyTable.get(keyIP);
+						printResult = printResult+"    "+(String)obj[0]+"\t";
+						byte[] mac = (byte[])proxyTable.get(keyIP)[1];
+						String ip_String =keyIP;
+						String mac_String ="";
+						
+//						for(int j=0;j<3;j++) ip_String = ip_String + (keyIP[j]&0xFF) +".";
+//						ip_String = ip_String + (keyIP[3]&0xFF);
+						for(int j=0;j<5;j++) mac_String = mac_String + String.format("%X:",mac[j]);
+						mac_String = mac_String + String.format("%X",mac[5]);
+						
+						printResult = printResult+ip_String+"\t    "+mac_String+"\n";
 					}
+					proxySize = proxyTable.size();
+					System.out.println(proxyTable.size()+"  "+printResult);
+					proxyArea.setText(printResult);
+					dispose();
 				}
 
 			}

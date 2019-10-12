@@ -53,8 +53,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	FileDialog fd;
 	private JTextField H_WAddressWrite;
 	
-	HashMap<String, Object[]> proxyTable = new HashMap<String, Object[]>();
-
 	/**
 	 * @wbp.nonvisual location=108,504
 	 */
@@ -109,35 +107,22 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnIPSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (IPAddressWrite.getText() != "") {
+					
 					String input = IPAddressWrite.getText();
-
-
-					//TotalArea.append(input + "\t"+"??????????\t incomplete\n");
-					//((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetType(type);
-
 					byte[] bytes = input.getBytes();
-					//					m_LayerMgr.GetLayer("TCP").Send(bytes, bytes.length);
-					String[] ipAddr_st = input.split("\\."); 
-					byte[] ipAddr_dst = new byte[4];
 
-					ipAddr_dst[0] = (byte)Integer.parseInt(ipAddr_st[0]);
-					ipAddr_dst[1] = (byte)Integer.parseInt(ipAddr_st[1]);
-					ipAddr_dst[2] = (byte)Integer.parseInt(ipAddr_st[2]);
-					ipAddr_dst[3] = (byte)Integer.parseInt(ipAddr_st[3]);
+					String[] ipAddr_st = input.split("\\.");
+					byte[] ipAddr_dst = new byte[4];
+					for(int i=0;i<4;i++) ipAddr_dst[i] = (byte)Integer.parseInt(ipAddr_st[i]);
 
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPDstAddress(ipAddr_dst);
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr_src);
-					
+
 					p_UnderLayer.Send(bytes, bytes.length);
-					//					 System.out.println("TCP濡� "+input +" Send");
-          
-					byte[] bytes = input.getBytes();
-					 p_UnderLayer.Send(bytes, bytes.length);
-//					 System.out.println("TCP濡� "+input +" Send");
 
 				} 
 				else {
-					JOptionPane.showMessageDialog(null, "二쇱냼 �꽕�젙 �삤瑜�");
+					JOptionPane.showMessageDialog(null, "雅뚯눘�꺖 占쎄퐬占쎌젟 占쎌궎�몴占�");
 				}
 			}
 		});
@@ -167,12 +152,13 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		JButton btnAdd = new JButton("Add");
 		btnAdd.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {  
-				new Second_Popup(proxyTable,proxyArea); //Add 踰꾪듉 �닃由댁떆 �몢踰덉㎏ �뙘�뾽李� �뿴湲�
+			public void actionPerformed(ActionEvent e) {
+				ARPLayer arpLayer = (ARPLayer) m_LayerMgr.GetLayer("ARP");
+				if(arpLayer!=null) 	new Second_Popup(((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable,proxyArea); //Add 甕곌쑵�뱣 占쎈땭�뵳�똻�뻻 占쎈あ甕곕뜆�럮 占쎈솚占쎈씜筌∽옙 占쎈였疫뀐옙
 				//				String[] selections = {"Host B", "Host C", "Host D"};
-				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry 異붽�", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
-				//				JOptionPane.showInputDialog(null, "IP 二쇱냼","Proxy ARP Entry 異붽�",3);
-				//				JOptionPane.showInputDialog(null, "Ethernet 二쇱냼","Proxy ARP Entry 異붽�",3);
+				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry �빊遺쏙옙", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
+				//				JOptionPane.showInputDialog(null, "IP 雅뚯눘�꺖","Proxy ARP Entry �빊遺쏙옙",3);
+				//				JOptionPane.showInputDialog(null, "Ethernet 雅뚯눘�꺖","Proxy ARP Entry �빊遺쏙옙",3);
 
 			}
 		});
@@ -188,7 +174,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		mnNewMenu.setBounds(-206, 226, 375, 183);
 		Proxy_Entry.add(mnNewMenu);
 
-		JButton btnEnd = new JButton("\uC885\uB8CC");  //醫낅즺踰꾪듉
+		JButton btnEnd = new JButton("\uC885\uB8CC");  //�넫�굝利븃린袁る뱣
 		btnEnd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -202,7 +188,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 			}
 		});
 
-		JButton btnCancel = new JButton("\uCDE8\uC18C");  //痍⑥냼踰꾪듉
+		JButton btnCancel = new JButton("\uCDE8\uC18C");  //�뿆�뫁�꺖甕곌쑵�뱣
 		btnCancel.setBounds(492, 383, 165, 35);
 		getContentPane().add(btnCancel);
 		btnCancel.addActionListener(new ActionListener() {
