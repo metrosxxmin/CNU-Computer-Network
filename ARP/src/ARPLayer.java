@@ -15,7 +15,8 @@ public class ARPLayer implements BaseLayer {
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
-	HashMap< byte[], Object[] > cacheTable = new HashMap<byte[], Object[]>();
+	HashMap<String, Object[] > cacheTable = new HashMap<String, Object[]>();
+	HashMap<String, Object[]> proxyTable = new HashMap<String, Object[]>();
 
 	private static byte[] arp_mac_srcaddr = null;
 	private byte[] arp_mac_dstaddr = null;
@@ -107,16 +108,19 @@ public class ARPLayer implements BaseLayer {
 	 */
 	public boolean Send(byte[] arp_protocol_srcaddr, byte[] arp_protocol_dstaddr, byte[] arp_opcode) {
 
-		Object[] value = new Object[3];
-
+		Object[] value = new Object[4];
+		String ipAddressToString = (arp_protocol_dstaddr[0]&0xFF) +"."+(arp_protocol_dstaddr[1]&0xFF) +"."+(arp_protocol_dstaddr[2]&0xFF) +"."+(arp_protocol_dstaddr[3]&0xFF);
+		
 		if(arp_opcode[0]==(byte)0x00 && arp_opcode[1]==(byte)0x01) { 
 
-			if(cacheTable.containsKey(arp_protocol_dstaddr)) return true; 
+			if(cacheTable.containsKey(ipAddressToString)) return true; 
 
 			value[0]= cacheTable.size();			// ARP-request Send ("Incomplete")
 			value[1]= m_sHeader._arp_mac_dstaddr;
 			value[2]="Incomplete";
-			cacheTable.put(arp_protocol_dstaddr, value);
+			value[3] = arp_protocol_dstaddr;
+			
+			cacheTable.put(ipAddressToString, value);
 
 		}
 
@@ -149,20 +153,24 @@ public class ARPLayer implements BaseLayer {
 	public synchronized boolean Receive(byte[] input, int length) {
 		byte[] message = input;
 
-		Object[] value = new Object[3];
+		Object[] value = new Object[4];
 		byte[] dstIP = new byte[4];
 		byte[] dstMac = new byte[6];
 
 		System.arraycopy(message, 14, dstIP, 0, 4); 
 		System.arraycopy(message, 8, dstMac, 0, 6);
-
+		String ipAddressToString = (dstIP[0]&0xFF) +"."+(dstIP[1]&0xFF) +"."+(dstIP[2]&0xFF) +"."+(dstIP[3]&0xFF);
+		
 		if(message[6]==(byte)0x00 && message[7] ==(byte)0x01) { // ARP-request Receive ("Complete")
 
-			if(!cacheTable.containsKey(dstIP)) {
+			if(!cacheTable.containsKey(ipAddressToString)) {
+				
 				value[0]=cacheTable.size();
 				value[1]= dstMac;
-				value[2]= "Complete";				
-				cacheTable.put(dstIP, value);
+				value[2]= "Complete";
+				value[3] =dstIP;
+				
+				cacheTable.put(ipAddressToString, value);
 			}
 			
 			for(int i=0;i<4;i++) {
@@ -183,10 +191,11 @@ public class ARPLayer implements BaseLayer {
 			Send(m_sHeader._arp_protocol_srcaddr.addr, target_IP, newOp);
 
 		}else if(message[6]==(byte)0x00 && message[7] ==(byte)0x02) { //ARP-reply Receive ("Incomplete" -> "Complete")
-			value[0]= cacheTable.get(dstIP)[0];
+			value[0]= cacheTable.get(ipAddressToString)[0];
 			value[1]= dstMac;
 			value[2]="Complete";
-			cacheTable.replace(dstIP, value);
+			value[3]=dstIP;
+			cacheTable.replace(ipAddressToString, value);
 		}
 		updateARPCacheTable();
 		return false;
@@ -199,14 +208,15 @@ public class ARPLayer implements BaseLayer {
 		ApplicationLayer.TotalArea.setText("");
 
 		for (Iterator iterator = keyS.iterator(); iterator.hasNext();) {
-			byte[] key = (byte[])iterator.next();
+			String key = (String)iterator.next();
 			Object[] value = (Object[]) cacheTable.get(key);
 
-			if(value[2] == "Incomplete") {
-				ApplicationLayer.TotalArea.append((key[0]&0xFF)+"."+(key[1]&0xFF)+"."+(key[2]&0xFF)+"."+(key[3]&0xFF) + "\t"+"??????????\t incomplete\n");		
+			if(value[2].equals("Incomplete")) {
+				ApplicationLayer.TotalArea.append(key + "\t"+"??????????\t incomplete\n");		
 			}else {
 				byte[] maxAddr = (byte[])value[1];
-				ApplicationLayer.TotalArea.append((key[0]&0xFF)+"."+(key[1]&0xFF)+"."+(key[2]&0xFF)+"."+(key[3]&0xFF)  + "\t"+ maxAddr[0]+":"+ maxAddr[1]+":"+ maxAddr[2]+":"+ maxAddr[3]+":"+ maxAddr[4]+":"+ maxAddr[5]+"\t complete\n");	
+				String macAddress = String.format("%X:", maxAddr[0])+ String.format("%X:", maxAddr[1])+ String.format("%X:", maxAddr[2])+ String.format("%X:", maxAddr[3])+ String.format("%X:", maxAddr[4])+ String.format("%X", maxAddr[5]);
+				ApplicationLayer.TotalArea.append(key  + "\t"+ macAddress+"\t complete\n");	
 			}
 
 		}
