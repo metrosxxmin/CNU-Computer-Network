@@ -49,24 +49,31 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	JButton btnAllDelete;
 	JButton btnIPSend;
 	JButton btnItemDelete;
-
+	JButton Setting_Button;
+	
+	JLabel choice;
+	static JComboBox<String> NICComboBox;
+	JComboBox strCombo;
+	int index;
+	
 	FileDialog fd;
 	private JTextField H_WAddressWrite;
-	
+
 	/**
 	 * @wbp.nonvisual location=108,504
 	 */
 	private final JPopupMenu popupMenu = new JPopupMenu();
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException{
 
+		m_LayerMgr.AddLayer(new NILayer("NI"));
 		m_LayerMgr.AddLayer(new ApplicationLayer("GUI"));
 		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
 		m_LayerMgr.AddLayer(new IPLayer("IP"));
 		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
 		m_LayerMgr.AddLayer(new EthernetLayer("Ethernet"));
-		m_LayerMgr.AddLayer(new NILayer("NI"));
-		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP (  *IP ( *TCP ( *GUI ) ) ) ");
+		
+		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP (  *IP ( *TCP ( *GUI ) ) ) ) ) ");
 	}
 
 	public ApplicationLayer(String pName) {
@@ -100,13 +107,54 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		btnAllDelete.setBounds(240, 263, 165, 35);
 		ARP_Cache.add(btnAllDelete);
+		
+		JPanel settingPanel = new JPanel();
+		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		settingPanel.setBounds(14, 380, 280, 40);
+		contentPane.add(settingPanel);
+		settingPanel.setLayout(null);
 
-		SettingMyAddress();
 
+		String[] adapterna= new String[((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.size()];
+
+
+		for(int i=0;i<((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.size();i++)
+			adapterna[i] = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(i).getDescription();
+
+		strCombo= new JComboBox(adapterna);
+		strCombo.setBounds(10, 15, 190, 20);
+		strCombo.setVisible(true);
+		settingPanel.add(strCombo);
+		strCombo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cb = (JComboBox) e.getSource(); // �޺��ڽ� �˾Ƴ���
+				index = cb.getSelectedIndex();// ���õ� �������� �ε���
+
+				try {
+					byte[] mac = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getHardwareAddress();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		Setting_Button = new JButton("Set");// setting
+		Setting_Button.setBounds(205, 15, 65, 20);
+		Setting_Button.addActionListener(new setAddressListener());
+		settingPanel.add(Setting_Button);// setting
+		
+	//	SettingMyAddress();
+		
 		btnIPSend = new JButton("Send");
 		btnIPSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (IPAddressWrite.getText() != "") {
+					
+					///////
+				//	((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(1);
+				////////////
 					
 					String input = IPAddressWrite.getText();
 					byte[] bytes = input.getBytes();
@@ -116,13 +164,13 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					for(int i=0;i<4;i++) ipAddr_dst[i] = (byte)Integer.parseInt(ipAddr_st[i]);
 
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPDstAddress(ipAddr_dst);
-					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr_src);
+					//((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr_src);
 
 					p_UnderLayer.Send(bytes, bytes.length);
 
 				} 
 				else {
-					JOptionPane.showMessageDialog(null, "雅뚯눘�꺖 占쎄퐬占쎌젟 占쎌궎�몴占�");
+					JOptionPane.showMessageDialog(null, "�ּ� ���� ����");
 				}
 			}
 		});
@@ -154,12 +202,8 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				ARPLayer arpLayer = (ARPLayer) m_LayerMgr.GetLayer("ARP");
-				if(arpLayer!=null) 	new Second_Popup(((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable,proxyArea); //Add 甕곌쑵�뱣 占쎈땭�뵳�똻�뻻 占쎈あ甕곕뜆�럮 占쎈솚占쎈씜筌∽옙 占쎈였疫뀐옙
-				//				String[] selections = {"Host B", "Host C", "Host D"};
-				//				JOptionPane.showInputDialog(null, "Device ","Proxy ARP Entry �빊遺쏙옙", JOptionPane.QUESTION_MESSAGE, null, selections, "Host B");
-				//				JOptionPane.showInputDialog(null, "IP 雅뚯눘�꺖","Proxy ARP Entry �빊遺쏙옙",3);
-				//				JOptionPane.showInputDialog(null, "Ethernet 雅뚯눘�꺖","Proxy ARP Entry �빊遺쏙옙",3);
-
+				if(arpLayer!=null) 	new Second_Popup(((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable,proxyArea); 
+	
 			}
 		});
 
@@ -174,7 +218,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		mnNewMenu.setBounds(-206, 226, 375, 183);
 		Proxy_Entry.add(mnNewMenu);
 
-		JButton btnEnd = new JButton("\uC885\uB8CC");  //�넫�굝利븃린袁る뱣
+		JButton btnEnd = new JButton("\uC885\uB8CC");  
 		btnEnd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -188,7 +232,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 			}
 		});
 
-		JButton btnCancel = new JButton("\uCDE8\uC18C");  //�뿆�뫁�꺖甕곌쑵�뱣
+		JButton btnCancel = new JButton("\uCDE8\uC18C"); 
 		btnCancel.setBounds(492, 383, 165, 35);
 		getContentPane().add(btnCancel);
 		btnCancel.addActionListener(new ActionListener() {
@@ -219,51 +263,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		setVisible(true);
 
-		SetCombobox();
-	}
-
-	public void SettingMyAddress() {
-		InetAddress ip;
-		try {
-			ip = InetAddress.getLocalHost();
-			NetworkInterface netif = NetworkInterface.getByInetAddress(ip);
-
-			String[] ipAddr_st = ip.getHostAddress().split("\\."); 
-			ipAddr_src = new byte[4];
-
-			ipAddr_src[0] = (byte)Integer.parseInt(ipAddr_st[0]);
-			ipAddr_src[1] = (byte)Integer.parseInt(ipAddr_st[1]);
-			ipAddr_src[2] = (byte)Integer.parseInt(ipAddr_st[2]);
-			ipAddr_src[3] = (byte)Integer.parseInt(ipAddr_st[3]);
-
-		//	((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr);
-			
-			if (netif != null) {
-				// get mac address
-				byte[] mac = netif.getHardwareAddress();
-				ARPLayer.SetMacAddrSrcAddr(mac);
-
-			}
-		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SocketException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
-
-	private void SetCombobox() {
-		List<PcapIf> m_pAdapterList = new ArrayList<PcapIf>();
-		StringBuilder errbuf = new StringBuilder();
-
-		int r = Pcap.findAllDevs(m_pAdapterList, errbuf);
-		if (r == Pcap.NOT_OK || m_pAdapterList.isEmpty()) {
-			System.err.printf("Can't read list of devices, error is %s", errbuf.toString());
-			return;
-		}
-		//		for (int i = 0; i < m_pAdapterList.size(); i++)
-		//			this.comboBox.addItem(m_pAdapterList.get(i).getDescription());
 	}
 
 
@@ -274,6 +273,41 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		return false;
 	}
 
+	class setAddressListener implements ActionListener  {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+
+
+			if (e.getSource() == Setting_Button) {
+				if(Setting_Button.getText() == "Set") {
+					byte[] src;
+					try {
+						src = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getHardwareAddress();
+						((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetSrcAddress(src);
+
+						((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(index);
+						((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetMacAddrSrcAddr(src);
+			
+						byte[] ipSrcAddress = ((((NILayer)m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getAddresses()).get(0)).getAddr().getData();
+						
+						((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipSrcAddress);
+						((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIPAddrSrcAddr(ipSrcAddress);
+						
+						Setting_Button.setEnabled(false);
+						strCombo.setEnabled(false);
+						
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+				}
+			}
+
+		}
+	}
+
+	
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
 		// TODO Auto-generated method stub
