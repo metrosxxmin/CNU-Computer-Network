@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.sound.sampled.AudioFormat.Encoding;
@@ -35,7 +36,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
 	String path;
-	private byte[] ipAddr_src;
 	JTextArea proxyArea;
 
 	private static LayerManager m_LayerMgr = new LayerManager();
@@ -50,12 +50,12 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	JButton btnIPSend;
 	JButton btnItemDelete;
 	JButton Setting_Button;
-	
+
 	JLabel choice;
 	static JComboBox<String> NICComboBox;
 	JComboBox strCombo;
 	int index;
-	
+
 	FileDialog fd;
 	private JTextField H_WAddressWrite;
 
@@ -72,7 +72,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		m_LayerMgr.AddLayer(new IPLayer("IP"));
 		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
 		m_LayerMgr.AddLayer(new EthernetLayer("Ethernet"));
-		
+
 		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP (  *IP ( *TCP ( *GUI ) ) ) ) ) ");
 	}
 
@@ -107,7 +107,15 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		btnAllDelete.setBounds(240, 263, 165, 35);
 		ARP_Cache.add(btnAllDelete);
-		
+
+		btnAllDelete.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+				((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.clear();
+				((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
+			}
+		});
+
 		JPanel settingPanel = new JPanel();
 		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
@@ -139,23 +147,18 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 				}
 			}
 		});
-		
+
 		Setting_Button = new JButton("Set");// setting
 		Setting_Button.setBounds(205, 15, 65, 20);
 		Setting_Button.addActionListener(new setAddressListener());
 		settingPanel.add(Setting_Button);// setting
-		
-	//	SettingMyAddress();
-		
+
+
 		btnIPSend = new JButton("Send");
 		btnIPSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (IPAddressWrite.getText() != "") {
-					
-					///////
-				//	((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(1);
-				////////////
-					
+
 					String input = IPAddressWrite.getText();
 					byte[] bytes = input.getBytes();
 
@@ -164,7 +167,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					for(int i=0;i<4;i++) ipAddr_dst[i] = (byte)Integer.parseInt(ipAddr_st[i]);
 
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPDstAddress(ipAddr_dst);
-					//((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipAddr_src);
 
 					p_UnderLayer.Send(bytes, bytes.length);
 
@@ -181,6 +183,19 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		btnItemDelete.setBounds(35, 263, 165, 35);
 		ARP_Cache.add(btnItemDelete);
+
+		btnItemDelete.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+				String del_ip = JOptionPane.showInputDialog("Item's IP Address");
+				if(del_ip != null) {
+					if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
+						((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
+						((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
+					}
+				}
+			}
+		});
 
 		JLabel lblIp = new JLabel("IP \uC8FC\uC18C");
 		lblIp.setBounds(14, 310, 56, 27);
@@ -203,7 +218,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 			public void actionPerformed(ActionEvent e) {
 				ARPLayer arpLayer = (ARPLayer) m_LayerMgr.GetLayer("ARP");
 				if(arpLayer!=null) 	new Second_Popup(((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable,proxyArea); 
-	
+
 			}
 		});
 
@@ -213,6 +228,34 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		JButton btnDelete = new JButton("Delete");
 		btnDelete.setBounds(249, 215, 165, 35);
 		Proxy_Entry.add(btnDelete);
+		
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String del_ip = JOptionPane.showInputDialog("Host's IP Address");
+				if(del_ip != null) {
+					if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable.containsKey(del_ip)) {
+						((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable.remove(del_ip);
+						
+						String printResult ="";
+						for(Iterator iterator = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable.keySet().iterator(); iterator.hasNext();) {
+							String keyIP = (String)iterator.next();
+							Object[] obj = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable.get(keyIP);
+							printResult = printResult+"    "+(String)obj[0]+"\t";
+							byte[] mac = (byte[])((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable.get(keyIP)[1];
+							String ip_String =keyIP;
+							String mac_String ="";
+							
+							for(int j=0;j<5;j++) mac_String = mac_String + String.format("%X:",mac[j]);
+							mac_String = mac_String + String.format("%X",mac[5]);
+							
+							printResult = printResult+ip_String+"\t    "+mac_String+"\n";
+						}
+						int proxySize = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable.size();
+						proxyArea.setText(printResult);
+					}
+				}
+			}
+		});
 
 		JMenu mnNewMenu = new JMenu("New menu");
 		mnNewMenu.setBounds(-206, 226, 375, 183);
@@ -287,15 +330,15 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 						((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(index);
 						((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetMacAddrSrcAddr(src);
-			
+
 						byte[] ipSrcAddress = ((((NILayer)m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getAddresses()).get(0)).getAddr().getData();
-						
+
 						((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipSrcAddress);
 						((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIPAddrSrcAddr(ipSrcAddress);
-						
+
 						Setting_Button.setEnabled(false);
 						strCombo.setEnabled(false);
-						
+
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -307,7 +350,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		}
 	}
 
-	
+
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
 		// TODO Auto-generated method stub
