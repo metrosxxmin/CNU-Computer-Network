@@ -70,8 +70,10 @@ public class EthernetLayer implements BaseLayer {
 		buf[9] = Header.enet_srcaddr.addr[3];
 		buf[10] = Header.enet_srcaddr.addr[4];
 		buf[11] = Header.enet_srcaddr.addr[5];
-		buf[12] = Header.enet_type[0];
-		buf[13] = Header.enet_type[1];
+//		buf[12] = Header.enet_type[0];
+//		buf[13] = Header.enet_type[1];
+		buf[12] = 0x08;
+		buf[13] = 0x06;
 		
 		for (int i = 0; i < length; i++) {
 			buf[HEARER_SIZE + i] = input[i];
@@ -96,6 +98,8 @@ public class EthernetLayer implements BaseLayer {
 			m_sHeader.enet_dstaddr.addr[3] = (byte)0xff;
 			m_sHeader.enet_dstaddr.addr[4] = (byte)0xff;
 			m_sHeader.enet_dstaddr.addr[5] = (byte)0xff;
+			
+
 
 		}else if(input[6]==0x00 && input[7]==0x02) {
 
@@ -105,6 +109,7 @@ public class EthernetLayer implements BaseLayer {
 			m_sHeader.enet_dstaddr.addr[3] = input[21];
 			m_sHeader.enet_dstaddr.addr[4] = input[22];
 			m_sHeader.enet_dstaddr.addr[5] = input[23];
+			
 
 		}
 
@@ -139,7 +144,9 @@ public class EthernetLayer implements BaseLayer {
 		
 		if(!srcme_Addr(input)) {
 			if(bro_Addr(input) || dstme_Addr(input)) {//주소확인 //주소확인 내가 보낸 것은 받지않는다.
-				this.GetUpperLayer(1).Receive(data);
+//				this.GetUpperLayer(1).Receive(data);
+				this.GetUpperLayer(0).Receive(data);
+				
 				return true;
 			}
 		}
