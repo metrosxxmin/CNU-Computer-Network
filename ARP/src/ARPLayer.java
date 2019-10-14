@@ -80,7 +80,7 @@ public class ARPLayer implements BaseLayer {
       pLayerName = pName;
       //m_sHeader = new _ARP_HEADER();
       if(thread==null) {
-    	  thread = new Cache_Timeout(this.cacheTable,1);
+    	  thread = new Cache_Timeout(this.cacheTable,1,5);
     	  Thread obj = new Thread(thread);
     	  obj.start();
       }
@@ -186,6 +186,13 @@ public class ARPLayer implements BaseLayer {
 
             cacheTable.put(ipAddressToString, value);
             updateARPCacheTable();
+         }else {
+        	 value[0]=cacheTable.get(ipAddressToString)[0];
+             value[1]= cacheTable.get(ipAddressToString)[1];
+             value[2]= cacheTable.get(ipAddressToString)[2];
+             value[3] = System.currentTimeMillis();
+             
+             cacheTable.put(ipAddressToString, value);
          }
 
          byte[] newOp = new byte[2];
@@ -207,7 +214,7 @@ public class ARPLayer implements BaseLayer {
          value[0]= cacheTable.get(ipAddressToString)[0];
          value[1]= dstMac;
          value[2]="Complete";
-         value[3] = cacheTable.get(ipAddressToString)[3];
+         value[3] = System.currentTimeMillis();
          cacheTable.replace(ipAddressToString, value);
 
          updateARPCacheTable();
@@ -293,11 +300,13 @@ public class ARPLayer implements BaseLayer {
 
 	class Cache_Timeout implements Runnable {
 		HashMap<String, Object[]> cacheTable;
-		int timeLimit;
+		int incompleteTimeLimit;
+		int completeTimeLimit;
 
-		public Cache_Timeout(HashMap<String, Object[]> cacheTable, int timeLimit) {
+		public Cache_Timeout(HashMap<String, Object[]> cacheTable, int incompleteTimeLimit, int completeTimeLimit) {
 			this.cacheTable = cacheTable;
-			this.timeLimit = timeLimit;
+			this.incompleteTimeLimit = incompleteTimeLimit;
+			this.completeTimeLimit = completeTimeLimit;
 		}
 
 		@Override
@@ -308,10 +317,18 @@ public class ARPLayer implements BaseLayer {
 			        String key=null; 
 					if((key=(String)iterator.next())!=null) {
 				         Object[] value = (Object[]) this.cacheTable.get(key);
-				         if((System.currentTimeMillis() - (long)value[3])/60000 >=timeLimit) {
-				        	 this.cacheTable.remove(key, value);
-				        	 updateARPCacheTable();
+				         if(value[2].equals("Incomplete")) {
+				        	 if((System.currentTimeMillis() - (long)value[3])/60000 >=incompleteTimeLimit) {
+					        	 this.cacheTable.remove(key, value);
+					        	 updateARPCacheTable();
+					         }
+				         }else {
+				        	 if((System.currentTimeMillis() - (long)value[3])/60000 >=completeTimeLimit) {
+					        	 this.cacheTable.remove(key, value);
+					        	 updateARPCacheTable();
+					         }
 				         }
+				         
 					}
 			    }
 				try {
