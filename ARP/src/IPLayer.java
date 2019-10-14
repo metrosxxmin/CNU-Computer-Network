@@ -97,7 +97,7 @@ public class IPLayer implements BaseLayer {
 		opcode[0] = (byte)0x00;
 		opcode[1] = (byte)0x01;
 		
-		((ARPLayer)this.GetUnderLayer()).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_dstaddr,opcode);
+		((ARPLayer)this.GetUnderLayer(0)).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_dstaddr,opcode);
 		return true;
 	}
 
