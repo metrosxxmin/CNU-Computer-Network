@@ -117,7 +117,8 @@ public class TCPLayer implements BaseLayer {
     @Override
     public void SetUnderLayer(BaseLayer pUnderLayer) {
         // TODO Auto-generated method stub
-        if (pUnderLayer == null)
+//    	System.out.println(pUnderLayer.GetLayerName()+"hh");
+    	if (pUnderLayer == null)
             return;
         this.p_UnderLayer = pUnderLayer;
     }
@@ -136,5 +137,9 @@ public class TCPLayer implements BaseLayer {
         this.SetUpperLayer(pUULayer);
         pUULayer.SetUnderLayer(this);
     }
+    @Override
+	public BaseLayer GetUnderLayer(int nindex) {
+		return null;
+	}
 
 }
