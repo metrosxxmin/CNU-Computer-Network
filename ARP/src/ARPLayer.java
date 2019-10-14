@@ -297,6 +297,10 @@ public class ARPLayer implements BaseLayer {
 	public void SetIPAddrSrcAddr(byte[] srcaddr) {
 		m_sHeader._arp_protocol_srcaddr.addr = srcaddr;
 	}
+	@Override
+	public BaseLayer GetUnderLayer(int nindex) {
+		return null;
+	}
 
 	class Cache_Timeout implements Runnable {
 		HashMap<String, Object[]> cacheTable;

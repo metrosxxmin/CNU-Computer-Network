@@ -67,13 +67,24 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	public static void main(String[] args) throws IOException{
 
 		m_LayerMgr.AddLayer(new NILayer("NI"));
-		m_LayerMgr.AddLayer(new ApplicationLayer("GUI"));
+		m_LayerMgr.AddLayer(new ApplicationLayer("APP"));
 		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
 		m_LayerMgr.AddLayer(new IPLayer("IP"));
 		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
 		m_LayerMgr.AddLayer(new EthernetLayer("Ethernet"));
+		m_LayerMgr.AddLayer(new FileAppLayer("File"));
+		m_LayerMgr.AddLayer(new ChatAppLayer("Chat"));
+		
+		m_LayerMgr.AddLayer(new SimplestDlg("GUI"));
+		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP ( *IP ( +TCP ( -IP *Chat ( *GUI ) *File ( *GUI ) *APP ) ) ) *IP ( +TCP ( -IP *Chat ( *GUI ) *File ( *GUI ) *APP ) ) ) ) ");
 
-		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP (  *IP ( *TCP ( *GUI ) ) ) ) ) ");
+
+		System.out.println(((IPLayer) m_LayerMgr.GetLayer("IP")).GetUnderLayer(0).GetLayerName());
+		System.out.println(((IPLayer) m_LayerMgr.GetLayer("IP")).GetUnderLayer(1).GetLayerName());
+		System.out.println(((TCPLayer) m_LayerMgr.GetLayer("TCP")).GetUnderLayer().GetLayerName());
+		System.out.println(((TCPLayer) m_LayerMgr.GetLayer("TCP")).GetUpperLayer(0).GetLayerName());
+		System.out.println(((TCPLayer) m_LayerMgr.GetLayer("TCP")).GetUpperLayer(1).GetLayerName());
+
 	}
 
 	public ApplicationLayer(String pName) {
@@ -395,5 +406,9 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 
+	}
+	@Override
+	public BaseLayer GetUnderLayer(int nindex) {
+		return null;
 	}
 }

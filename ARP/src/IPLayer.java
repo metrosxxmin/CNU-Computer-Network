@@ -2,8 +2,10 @@ import java.util.ArrayList;
 
 public class IPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
+	public int nUnderLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
+	public ArrayList<BaseLayer> p_aUnderLayerIP = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	
 	
@@ -124,10 +126,7 @@ public class IPLayer implements BaseLayer {
 
 	@Override
 	public BaseLayer GetUnderLayer() {
-		// TODO Auto-generated method stub
-		if (p_UnderLayer == null)
-			return null;
-		return p_UnderLayer;
+		return null;
 	}
 
 	@Override
@@ -143,7 +142,7 @@ public class IPLayer implements BaseLayer {
 		// TODO Auto-generated method stub
 		if (pUnderLayer == null)
 			return;
-		this.p_UnderLayer = pUnderLayer;
+		this.p_aUnderLayerIP.add(nUnderLayerCount++, pUnderLayer);
 	}
 
 	@Override
@@ -158,6 +157,12 @@ public class IPLayer implements BaseLayer {
 	@Override
 	public void SetUpperUnderLayer(BaseLayer pUULayer) {
 		this.SetUpperLayer(pUULayer);
-		pUULayer.SetUnderLayer(this);
+		this.SetUnderLayer(pUULayer);
+	}
+	@Override
+	public BaseLayer GetUnderLayer(int nindex) {
+		if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
+			return null;
+		return p_aUnderLayerIP.get(nindex);
 	}
 }
