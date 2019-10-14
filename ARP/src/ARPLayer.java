@@ -20,6 +20,7 @@ public class ARPLayer implements BaseLayer {
 
    private static byte[] arp_mac_srcaddr = null;
    private byte[] arp_mac_dstaddr = null;
+   Cache_Timeout thread =null;
 
    // inner class for dealing with Mac address
    private class _ARP_MAC_ADDR {
@@ -78,6 +79,12 @@ public class ARPLayer implements BaseLayer {
       // TODO Auto-generated constructor stub
       pLayerName = pName;
       //m_sHeader = new _ARP_HEADER();
+      if(thread==null) {
+    	  thread = new Cache_Timeout(this.cacheTable,1,5);
+    	  Thread obj = new Thread(thread);
+    	  obj.start();
+      }
+      
    }
 
    public byte[] ObjToByte(_ARP_HEADER m_sHeader) {
@@ -119,7 +126,7 @@ public class ARPLayer implements BaseLayer {
          value[0]= cacheTable.size();         // ARP-request Send ("Incomplete")
          value[1]= m_sHeader._arp_mac_dstaddr;
          value[2]="Incomplete";
-         value[3] = arp_protocol_dstaddr;
+         value[3] = System.currentTimeMillis();
 
          cacheTable.put(ipAddressToString, value);
 
@@ -175,10 +182,17 @@ public class ARPLayer implements BaseLayer {
             value[0]=cacheTable.size();
             value[1]= dstMac;
             value[2]= "Complete";
-            value[3] =dstIP;
+            value[3] = System.currentTimeMillis();
 
             cacheTable.put(ipAddressToString, value);
             updateARPCacheTable();
+         }else {
+        	 value[0]=cacheTable.get(ipAddressToString)[0];
+             value[1]= cacheTable.get(ipAddressToString)[1];
+             value[2]= cacheTable.get(ipAddressToString)[2];
+             value[3] = System.currentTimeMillis();
+             
+             cacheTable.put(ipAddressToString, value);
          }
 
          byte[] newOp = new byte[2];
@@ -200,7 +214,7 @@ public class ARPLayer implements BaseLayer {
          value[0]= cacheTable.get(ipAddressToString)[0];
          value[1]= dstMac;
          value[2]="Complete";
-         value[3]=dstIP;
+         value[3] = System.currentTimeMillis();
          cacheTable.replace(ipAddressToString, value);
 
          updateARPCacheTable();
@@ -280,7 +294,52 @@ public class ARPLayer implements BaseLayer {
       this.arp_mac_dstaddr=dstaddr;
    }
 
-   public void SetIPAddrSrcAddr(byte[] srcaddr) {
-      m_sHeader._arp_protocol_srcaddr.addr=srcaddr;
-   }
+	public void SetIPAddrSrcAddr(byte[] srcaddr) {
+		m_sHeader._arp_protocol_srcaddr.addr = srcaddr;
+	}
+
+	class Cache_Timeout implements Runnable {
+		HashMap<String, Object[]> cacheTable;
+		int incompleteTimeLimit;
+		int completeTimeLimit;
+
+		public Cache_Timeout(HashMap<String, Object[]> cacheTable, int incompleteTimeLimit, int completeTimeLimit) {
+			this.cacheTable = cacheTable;
+			this.incompleteTimeLimit = incompleteTimeLimit;
+			this.completeTimeLimit = completeTimeLimit;
+		}
+
+		@Override
+		public void run() {
+			while (true) {
+				Set keyS = this.cacheTable.keySet();
+				for (Iterator iterator = keyS.iterator(); iterator.hasNext();) {
+			        String key=null; 
+					if((key=(String)iterator.next())!=null) {
+				         Object[] value = (Object[]) this.cacheTable.get(key);
+				         if(value[2].equals("Incomplete")) {
+				        	 if((System.currentTimeMillis() - (long)value[3])/60000 >=incompleteTimeLimit) {
+					        	 this.cacheTable.remove(key, value);
+					        	 updateARPCacheTable();
+					         }
+				         }else {
+				        	 if((System.currentTimeMillis() - (long)value[3])/60000 >=completeTimeLimit) {
+					        	 this.cacheTable.remove(key, value);
+					        	 updateARPCacheTable();
+					         }
+				         }
+				         
+					}
+			    }
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 }
+
