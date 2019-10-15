@@ -119,8 +119,7 @@ public class Second_Popup extends JFrame {
 						String ip_String =keyIP;
 						String mac_String ="";
 						
-//						for(int j=0;j<3;j++) ip_String = ip_String + (keyIP[j]&0xFF) +".";
-//						ip_String = ip_String + (keyIP[3]&0xFF);
+
 						for(int j=0;j<5;j++) mac_String = mac_String + String.format("%X:",mac[j]);
 						mac_String = mac_String + String.format("%X",mac[5]);
 						

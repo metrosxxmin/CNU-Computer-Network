@@ -117,8 +117,10 @@ public class NILayer implements BaseLayer {
 		pUULayer.SetUnderLayer(this);
 
 	}
+
 	@Override
 	public BaseLayer GetUnderLayer(int nindex) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }
@@ -147,5 +149,4 @@ class Receive_Thread implements Runnable {
 			AdapterObject.loop(100000, jpacketHandler, "");
 		}
 	}
-	
 }

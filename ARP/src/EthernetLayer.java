@@ -7,6 +7,9 @@ public class EthernetLayer implements BaseLayer {
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	public final static int HEARER_SIZE = 14;
+	
+	public byte[] chat_file_dstaddr;
+	
 	private class _ETHERNET_ADDR {
 		private byte[] addr = new byte[6];
 
@@ -53,6 +56,23 @@ public class EthernetLayer implements BaseLayer {
 		m_sHeader.enet_srcaddr.addr[5]= srcAddress[5];
 
 	}
+	
+	public void SetEnetDstAddress(byte[] dstAddress) {
+		// TODO Auto-generated method stub
+		m_sHeader.enet_dstaddr.addr[0]= dstAddress[0];
+		m_sHeader.enet_dstaddr.addr[1]= dstAddress[1];
+		m_sHeader.enet_dstaddr.addr[2]= dstAddress[2];
+		m_sHeader.enet_dstaddr.addr[3]= dstAddress[3];
+		m_sHeader.enet_dstaddr.addr[4]= dstAddress[4];
+		m_sHeader.enet_dstaddr.addr[5]= dstAddress[5];
+
+	}
+	
+//	public void Set_CF_EnetDstAddress(byte[] dstAddress) {
+//		// TODO Auto-generated method stub
+//		chat_file_dstaddr = dstAddress;
+//
+//	}
 
 
 	public byte[] ObjToByteDATA(_ETHERNET_HEADER Header, byte[] input, int length) {
@@ -70,10 +90,10 @@ public class EthernetLayer implements BaseLayer {
 		buf[9] = Header.enet_srcaddr.addr[3];
 		buf[10] = Header.enet_srcaddr.addr[4];
 		buf[11] = Header.enet_srcaddr.addr[5];
-//		buf[12] = Header.enet_type[0];
-//		buf[13] = Header.enet_type[1];
-		buf[12] = 0x08;
-		buf[13] = 0x06;
+		buf[12] = Header.enet_type[0];
+		buf[13] = Header.enet_type[1];
+//		buf[12] = 0x08;
+//		buf[13] = 0x06;
 		
 		for (int i = 0; i < length; i++) {
 			buf[HEARER_SIZE + i] = input[i];
@@ -82,43 +102,59 @@ public class EthernetLayer implements BaseLayer {
 
 		return buf;
 	}
-
-	public boolean Send(byte[] input, int length) {
-
+	public boolean Send(byte[] input, int length){
+		
 		m_sHeader.enet_data=input;
-		m_sHeader.enet_type[0]=(byte)0x08;
-		m_sHeader.enet_type[1]=(byte)0x06;	
+		if(m_sHeader.enet_data.length > 1500) return false;
+		
+		if(input[6]==0x00 && input[7]==0x03) {//IP
+			m_sHeader.enet_data=input;
+			m_sHeader.enet_type[0]=(byte)0x08;
+			m_sHeader.enet_type[1]=(byte)0x00;	
 
 
-		if(input[6]==0x00 && input[7]==0x01) {
-
-			m_sHeader.enet_dstaddr.addr[0] = (byte)0xff;
-			m_sHeader.enet_dstaddr.addr[1] = (byte)0xff;
-			m_sHeader.enet_dstaddr.addr[2] = (byte)0xff;
-			m_sHeader.enet_dstaddr.addr[3] = (byte)0xff;
-			m_sHeader.enet_dstaddr.addr[4] = (byte)0xff;
-			m_sHeader.enet_dstaddr.addr[5] = (byte)0xff;
+			byte[] frame = ObjToByteDATA(m_sHeader,input,length);
+			GetUnderLayer().Send(frame,length+HEARER_SIZE);
 			
 
-
-		}else if(input[6]==0x00 && input[7]==0x02) {
-
-			m_sHeader.enet_dstaddr.addr[0] = input[18];
-			m_sHeader.enet_dstaddr.addr[1] = input[19];
-			m_sHeader.enet_dstaddr.addr[2] = input[20];
-			m_sHeader.enet_dstaddr.addr[3] = input[21];
-			m_sHeader.enet_dstaddr.addr[4] = input[22];
-			m_sHeader.enet_dstaddr.addr[5] = input[23];
+		}else {//ARP
 			
+			m_sHeader.enet_data=input;
+			m_sHeader.enet_type[0]=(byte)0x08;
+			m_sHeader.enet_type[1]=(byte)0x06;	
+
+
+			if(input[6]==0x00 && input[7]==0x01) {
+
+				m_sHeader.enet_dstaddr.addr[0] = (byte)0xff;
+				m_sHeader.enet_dstaddr.addr[1] = (byte)0xff;
+				m_sHeader.enet_dstaddr.addr[2] = (byte)0xff;
+				m_sHeader.enet_dstaddr.addr[3] = (byte)0xff;
+				m_sHeader.enet_dstaddr.addr[4] = (byte)0xff;
+				m_sHeader.enet_dstaddr.addr[5] = (byte)0xff;
+				
+
+
+			}else if(input[6]==0x00 && input[7]==0x02) {
+
+				m_sHeader.enet_dstaddr.addr[0] = input[18];
+				m_sHeader.enet_dstaddr.addr[1] = input[19];
+				m_sHeader.enet_dstaddr.addr[2] = input[20];
+				m_sHeader.enet_dstaddr.addr[3] = input[21];
+				m_sHeader.enet_dstaddr.addr[4] = input[22];
+				m_sHeader.enet_dstaddr.addr[5] = input[23];
+				
+
+			}
+
+
+			byte[] frame = ObjToByteDATA(m_sHeader,input,length);
+
+			GetUnderLayer().Send(frame,length+HEARER_SIZE);
 
 		}
-
-
-		byte[] frame = ObjToByteDATA(m_sHeader,input,length);
-
-		GetUnderLayer().Send(frame,length+HEARER_SIZE);
-
-		return false;
+		
+		return true;
 	}
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
@@ -138,15 +174,17 @@ public class EthernetLayer implements BaseLayer {
 		byte[] data;
 		data = RemoveCappHeader(input, input.length);
 
-		//IP Layer로 보내기
-
-		//ARP Layer로 보내기
 		
 		if(!srcme_Addr(input)) {
-			if(bro_Addr(input) || dstme_Addr(input)) {//주소확인 //주소확인 내가 보낸 것은 받지않는다.
-//				this.GetUpperLayer(1).Receive(data);
-				this.GetUpperLayer(0).Receive(data);
+			if(bro_Addr(input) || dstme_Addr(input)) {
 				
+				if(input[12] == 0x08 && input[13] == 0x00 ) {
+					//IP Layer로 보내기
+					this.GetUpperLayer(1).Receive(data);			
+				}else {
+					//ARP Layer로 보내기
+					this.GetUpperLayer(0).Receive(data);
+				}
 				return true;
 			}
 		}

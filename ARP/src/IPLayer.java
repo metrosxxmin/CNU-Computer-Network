@@ -89,16 +89,25 @@ public class IPLayer implements BaseLayer {
 		return buf;
 	}
 
+	
 	public boolean Send(byte[] input, int length) {
-		System.out.println("IP 들어옴");
-		byte[] bytes = ObjToByte(m_sHeader,input,length);
 		
-		byte[] opcode = new byte[2];
-		opcode[0] = (byte)0x00;
-		opcode[1] = (byte)0x01;
 		
-		((ARPLayer)this.GetUnderLayer(0)).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_dstaddr,opcode);
-		return true;
+		if((input[2]==(byte)0x20 && input[3]==(byte)0x80) || (input[2]==(byte)0x20 && input[3]==(byte)0x90) ) {
+			m_sHeader.ip_offset[0] = 0x00;
+			m_sHeader.ip_offset[1] = 0x03;
+			
+			byte[] bytes = ObjToByte(m_sHeader,input,length);
+			this.GetUnderLayer(1).Send(bytes,length+20);
+			return true;
+		}else {
+			byte[] opcode = new byte[2];
+			opcode[0] = (byte)0x00;
+			opcode[1] = (byte)0x01;
+			byte[] bytes = ObjToByte(m_sHeader,input,length);
+			((ARPLayer)this.GetUnderLayer(0)).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_dstaddr,opcode);
+			return true;
+		}
 	}
 
 
@@ -113,10 +122,31 @@ public class IPLayer implements BaseLayer {
 
 	public synchronized boolean Receive(byte[] input) {
 		byte[] data = RemoveCappHeader(input, input.length);
-		this.GetUpperLayer(0).Receive(data);
-		return true;
+	
+		if(srcme_Addr(input)) {
+			return false;
+		}
+		if(dstme_Addr(input)) {
+			this.GetUpperLayer(0).Receive(data);
+			return true;
+		}
+		return false;
 	}
 
+	public boolean dstme_Addr(byte[] add) {//주소확인
+		for(int i = 0;i<4;i++) {
+			if(add[i+16]!=m_sHeader.ip_srcaddr[i]) return false;
+		}
+
+		return true;
+	}
+	public boolean srcme_Addr(byte[] add) {//주소확인
+		for(int i = 0;i<4;i++) {
+			if(add[i+12]!=m_sHeader.ip_srcaddr[i]) return false;
+		}
+
+		return true;
+	}
 	
 	@Override
 	public String GetLayerName() {
@@ -145,7 +175,6 @@ public class IPLayer implements BaseLayer {
 		this.p_aUnderLayerIP.add(nUnderLayerCount++, pUnderLayer);
 	}
 
-	@Override
 	public void SetUpperLayer(BaseLayer pUpperLayer) {
 		// TODO Auto-generated method stub
 		if (pUpperLayer == null)
