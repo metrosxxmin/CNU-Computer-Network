@@ -317,24 +317,24 @@ public class ARPLayer implements BaseLayer {
 		public void run() {
 			while (true) {
 				Set keyS = this.cacheTable.keySet();
+				ArrayList<String> deleteKey = new ArrayList<String>();
 				for (Iterator iterator = keyS.iterator(); iterator.hasNext();) {
 			        String key=null; 
 					if((key=(String)iterator.next())!=null) {
 				         Object[] value = (Object[]) this.cacheTable.get(key);
 				         if(value[2].equals("Incomplete")) {
 				        	 if((System.currentTimeMillis() - (long)value[3])/60000 >=incompleteTimeLimit) {
-					        	 this.cacheTable.remove(key, value);
-					        	 updateARPCacheTable();
+					        	 deleteKey.add(key);
 					         }
 				         }else {
 				        	 if((System.currentTimeMillis() - (long)value[3])/60000 >=completeTimeLimit) {
-					        	 this.cacheTable.remove(key, value);
-					        	 updateARPCacheTable();
+					        	 deleteKey.add(key);
 					         }
 				         }
-				         
 					}
 			    }
+				for(int i=0;i<deleteKey.size();i++) this.cacheTable.remove(deleteKey.get(i));
+				updateARPCacheTable();
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
