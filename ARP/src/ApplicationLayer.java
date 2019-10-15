@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.sound.sampled.AudioFormat.Encoding;
 import javax.swing.*;
@@ -122,7 +123,23 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnAllDelete.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.clear();
+				Set key = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.keySet();
+				ArrayList<String> deleteKey = new ArrayList<String>();
+				for(Iterator iterator = key.iterator();iterator.hasNext();) {
+					String keyValue = (String)iterator.next();
+					Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(keyValue);
+					if(System.currentTimeMillis()-(long)value[3]/100 <= 5) {
+						try {
+							Thread.sleep(System.currentTimeMillis()-(long)value[3]);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						deleteKey.add(keyValue);
+					}else deleteKey.add(keyValue);
+				}
+				
+				for(int i=0;i<deleteKey.size();i++) ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(deleteKey.get(i));
 				((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
 			}
 		});
@@ -201,8 +218,11 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 				String del_ip = JOptionPane.showInputDialog("Item's IP Address");
 				if(del_ip != null) {
 					if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
-						((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
-						((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
+						Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(del_ip);
+						if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { //1초 이하로 남으면 delete 안하고 대기
+							((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
+							((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
+						}
 					}
 				}
 			}
