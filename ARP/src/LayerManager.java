@@ -113,8 +113,8 @@ public class LayerManager {
 					String pcName = pNode.token.substring(1, pNode.token.length());
 					
 					pLayer = GetLayer (pcName);
-					switch(cMode){
 					
+					switch(cMode){
 					case '*':
 						Top().SetUpperUnderLayer( pLayer );
 						break;

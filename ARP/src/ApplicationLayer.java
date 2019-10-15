@@ -36,10 +36,12 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
+	public static boolean exist = false;
+	
 	String path;
 	JTextArea proxyArea;
 
-	private static LayerManager m_LayerMgr = new LayerManager();
+	//private static LayerManager m_LayerMgr = new LayerManager();
 	int selected_index;
 	private JTextField IPAddressWrite;
 
@@ -65,34 +67,16 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	 */
 	private final JPopupMenu popupMenu = new JPopupMenu();
 
-	public static void main(String[] args) throws IOException{
+	
+    public ApplicationLayer (String pName) {
+        pLayerName = pName;
+    }
 
-		m_LayerMgr.AddLayer(new NILayer("NI"));
-		m_LayerMgr.AddLayer(new ApplicationLayer("APP"));
-		m_LayerMgr.AddLayer(new TCPLayer("TCP"));
-		m_LayerMgr.AddLayer(new IPLayer("IP"));
-		m_LayerMgr.AddLayer(new ARPLayer("ARP"));
-		m_LayerMgr.AddLayer(new EthernetLayer("Ethernet"));
-		m_LayerMgr.AddLayer(new FileAppLayer("File"));
-		m_LayerMgr.AddLayer(new ChatAppLayer("Chat"));
-		
-		m_LayerMgr.AddLayer(new SimplestDlg("GUI"));
-		m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP ( *IP ( +TCP ( -IP *Chat ( *GUI ) *File ( *GUI ) *APP ) ) ) *IP ( +TCP ( -IP *Chat ( *GUI ) *File ( *GUI ) *APP ) ) ) ) ");
+	public void App_pop(LayerManager m_LayerMgr) {
 
-
-		System.out.println(((IPLayer) m_LayerMgr.GetLayer("IP")).GetUnderLayer(0).GetLayerName());
-		System.out.println(((IPLayer) m_LayerMgr.GetLayer("IP")).GetUnderLayer(1).GetLayerName());
-		System.out.println(((TCPLayer) m_LayerMgr.GetLayer("TCP")).GetUnderLayer().GetLayerName());
-		System.out.println(((TCPLayer) m_LayerMgr.GetLayer("TCP")).GetUpperLayer(0).GetLayerName());
-		System.out.println(((TCPLayer) m_LayerMgr.GetLayer("TCP")).GetUpperLayer(1).GetLayerName());
-
-	}
-
-	public ApplicationLayer(String pName) {
-
-		pLayerName = pName;
 		setTitle("Chatting & File Transfer");
-
+		
+		
 		setBounds(250, 250, 987, 477);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -109,7 +93,9 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		TotalArea.setEditable(false);
 		TotalArea.setBounds(14, 24, 430, 227);
 		ARP_Cache.add(TotalArea);
-
+		
+		exist = true;
+		
 		IPAddressWrite = new JTextField();
 		IPAddressWrite.setBounds(71, 307, 239, 32);// 249
 		ARP_Cache.add(IPAddressWrite);
@@ -117,70 +103,32 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		btnAllDelete = new JButton("All Delete");// setting
 
-		btnAllDelete.setBounds(240, 263, 165, 35);
-		ARP_Cache.add(btnAllDelete);
+	      btnAllDelete.setBounds(240, 263, 165, 35);
+	      ARP_Cache.add(btnAllDelete);
 
-		btnAllDelete.addActionListener(new ActionListener() {
+	      btnAllDelete.addActionListener(new ActionListener() {
 
-			public void actionPerformed(ActionEvent arg0) {
-				Set key = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.keySet();
-				ArrayList<String> deleteKey = new ArrayList<String>();
-				for(Iterator iterator = key.iterator();iterator.hasNext();) {
-					String keyValue = (String)iterator.next();
-					Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(keyValue);
-					if(System.currentTimeMillis()-(long)value[3]/100 <= 5) {
-						try {
-							Thread.sleep(System.currentTimeMillis()-(long)value[3]);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						deleteKey.add(keyValue);
-					}else deleteKey.add(keyValue);
-				}
-				
-				for(int i=0;i<deleteKey.size();i++) ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(deleteKey.get(i));
-				((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
-			}
-		});
-
-		JPanel settingPanel = new JPanel();
-		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
-				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		settingPanel.setBounds(14, 380, 280, 40);
-		contentPane.add(settingPanel);
-		settingPanel.setLayout(null);
-
-
-		String[] adapterna= new String[((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.size()];
-
-
-		for(int i=0;i<((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.size();i++)
-			adapterna[i] = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(i).getDescription();
-
-		strCombo= new JComboBox(adapterna);
-		strCombo.setBounds(10, 15, 190, 20);
-		strCombo.setVisible(true);
-		settingPanel.add(strCombo);
-		strCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JComboBox cb = (JComboBox) e.getSource(); // ƒﬁ∫∏π⁄Ω∫ æÀæ∆≥ª±‚
-				index = cb.getSelectedIndex();// º±≈√µ» æ∆¿Ã≈€¿« ¿Œµ¶Ω∫
-
-				try {
-					byte[] mac = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getHardwareAddress();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-
-		Setting_Button = new JButton("Set");// setting
-		Setting_Button.setBounds(205, 15, 65, 20);
-		Setting_Button.addActionListener(new setAddressListener());
-		settingPanel.add(Setting_Button);// setting
-
+	         public void actionPerformed(ActionEvent arg0) {
+	            Set key = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.keySet();
+	            ArrayList<String> deleteKey = new ArrayList<String>();
+	            for(Iterator iterator = key.iterator();iterator.hasNext();) {
+	               String keyValue = (String)iterator.next();
+	               Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(keyValue);
+	               if(System.currentTimeMillis()-(long)value[3]/100 <= 5) {
+	                  try {
+	                     Thread.sleep(System.currentTimeMillis()-(long)value[3]);
+	                  } catch (InterruptedException e) {
+	                     // TODO Auto-generated catch block
+	                     e.printStackTrace();
+	                  }
+	                  deleteKey.add(keyValue);
+	               }else deleteKey.add(keyValue);
+	            }
+	            
+	            for(int i=0;i<deleteKey.size();i++) ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(deleteKey.get(i));
+	            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
+	         }
+	      });
 
 		btnIPSend = new JButton("Send");
 		btnIPSend.addActionListener(new ActionListener() {
@@ -195,12 +143,12 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					for(int i=0;i<4;i++) ipAddr_dst[i] = (byte)Integer.parseInt(ipAddr_st[i]);
 
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPDstAddress(ipAddr_dst);
-
+					
 					p_UnderLayer.Send(bytes, bytes.length);
 
 				} 
 				else {
-					JOptionPane.showMessageDialog(null, "¡÷º“ º≥¡§ ø¿∑˘");
+					JOptionPane.showMessageDialog(null, "Ï£ºÏÜå ÏÑ§Ï†ï Ïò§Î•ò");
 				}
 			}
 		});
@@ -209,24 +157,24 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		btnItemDelete = new JButton("Item Delete");
 
-		btnItemDelete.setBounds(35, 263, 165, 35);
-		ARP_Cache.add(btnItemDelete);
+	      btnItemDelete.setBounds(35, 263, 165, 35);
+	      ARP_Cache.add(btnItemDelete);
 
-		btnItemDelete.addActionListener(new ActionListener() {
+	      btnItemDelete.addActionListener(new ActionListener() {
 
-			public void actionPerformed(ActionEvent arg0) {
-				String del_ip = JOptionPane.showInputDialog("Item's IP Address");
-				if(del_ip != null) {
-					if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
-						Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(del_ip);
-						if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { //1√  ¿Ã«œ∑Œ ≥≤¿∏∏È delete æ»«œ∞Ì ¥Î±‚
-							((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
-							((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
-						}
-					}
-				}
-			}
-		});
+	         public void actionPerformed(ActionEvent arg0) {
+	            String del_ip = JOptionPane.showInputDialog("Item's IP Address");
+	            if(del_ip != null) {
+	               if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
+	                  Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(del_ip);
+	                  if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { //1Ï¥à Ïù¥ÌïòÎ°ú ÎÇ®ÏúºÎ©¥ delete ÏïàÌïòÍ≥† ÎåÄÍ∏∞
+	                     ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
+	                     ((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
+	                  }
+	               }
+	            }
+	         }
+	      });
 
 		JLabel lblIp = new JLabel("IP \uC8FC\uC18C");
 		lblIp.setBounds(14, 310, 56, 27);
@@ -302,7 +250,9 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnEnd.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
+//				System.exit(0);
+				exist = false;
+			dispose();
 			}
 		});
 
@@ -312,7 +262,9 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnCancel.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
+//				System.exit(0);
+				exist = false;
+				dispose();
 			}
 		});
 
@@ -342,44 +294,11 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 	public boolean Receive(byte[] input) {
 		byte[] data = input;
-		String Text = new String(data);
-		TotalArea.append("[RECV] : " + Text + "\n");
+
+
 		return false;
 	}
 
-	class setAddressListener implements ActionListener  {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-
-			if (e.getSource() == Setting_Button) {
-				if(Setting_Button.getText() == "Set") {
-					byte[] src;
-					try {
-						src = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getHardwareAddress();
-						((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetSrcAddress(src);
-
-						((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(index);
-						((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetMacAddrSrcAddr(src);
-
-						byte[] ipSrcAddress = ((((NILayer)m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(index).getAddresses()).get(0)).getAddr().getData();
-
-						((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPSrcAddress(ipSrcAddress);
-						((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIPAddrSrcAddr(ipSrcAddress);
-
-						Setting_Button.setEnabled(false);
-						strCombo.setEnabled(false);
-
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-				}
-			}
-
-		}
-	}
 
 
 	@Override
@@ -427,6 +346,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		pUULayer.SetUnderLayer(this);
 
 	}
+	
 	@Override
 	public BaseLayer GetUnderLayer(int nindex) {
 		return null;
