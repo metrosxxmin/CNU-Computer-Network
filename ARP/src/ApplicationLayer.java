@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.sound.sampled.AudioFormat.Encoding;
 import javax.swing.*;
@@ -143,12 +144,14 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					for(int i=0;i<4;i++) ipAddr_dst[i] = (byte)Integer.parseInt(ipAddr_st[i]);
 
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPDstAddress(ipAddr_dst);
+//					 ((IPLayer) m_LayerMgr.GetLayer("IP")).arpDST_mac=h;
+//		             ((IPLayer) m_LayerMgr.GetLayer("IP")).arpDST_ip=ipAddr_dst;
 					
 					p_UnderLayer.Send(bytes, bytes.length);
 
 				} 
 				else {
-					JOptionPane.showMessageDialog(null, "주소 설정 오류");
+					JOptionPane.showMessageDialog(null, "�썒�슣�닔占쎄틬 �뜝�럡�맟�뜝�럩�젧 �뜝�럩沅롳옙紐닷뜝占�");
 				}
 			}
 		});
@@ -167,7 +170,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	            if(del_ip != null) {
 	               if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
 	                  Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(del_ip);
-	                  if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { //1초 이하로 남으면 delete 안하고 대기
+	                  if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { //1占쎈／�뜝占� �뜝�럩逾졾뜝�럥由��슖�댙�삕 �뜝�럡�뀣�뜝�럩紐든춯濡녹삕 delete �뜝�럥�닱�뜝�럥由�占썩뫅�삕 �뜝�룞�삕�뼨�먯삕
 	                     ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
 	                     ((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
 	                  }
@@ -286,6 +289,37 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		JButton button_2 = new JButton("Send");
 		button_2.setBounds(340, 29, 107, 32);
 		GratuitousARP.add(button_2);
+		
+		button_2.addActionListener(new ActionListener() {
+	         public void actionPerformed(ActionEvent arg0) {
+	            //////////////////////////////
+	            if (H_WAddressWrite.getText() != "") {
+	               String input = H_WAddressWrite.getText();
+	               StringTokenizer st = new StringTokenizer(input, ":");
+	               
+	               byte[] hwAddress = new byte[6];
+	               for (int i = 0; i < 6; i++) {
+	                  String ss = st.nextToken();
+	                  int s = Integer.parseInt(ss,16);
+	                  hwAddress[i] = (byte) (s & 0xFF);
+	               }
+	               System.out.println("GARP app send");
+	               
+	              
+	               p_UnderLayer.Send(hwAddress, hwAddress.length,"GARP");
+	               
+	               String macAddress = String.format("%X:", hwAddress[0]) + String.format("%X:", hwAddress[1])
+					+ String.format("%X:", hwAddress[2]) + String.format("%X:", hwAddress[3])
+					+ String.format("%X:", hwAddress[4]) + String.format("%X", hwAddress[5]);
+			
+	               SimplestDlg.serSRCAddr(macAddress);
+
+	            } else {
+	               JOptionPane.showMessageDialog(null, "H_W 雅뚯눘�꺖 占쎄퐬占쎌젟 占쎌궎�몴占�");
+	            }
+	         }
+	      });
+
 
 		setVisible(true);
 

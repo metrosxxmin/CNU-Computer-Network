@@ -6,18 +6,21 @@ public class TCPLayer implements BaseLayer {
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	public static int upperLayer_num ;
-	//    TCP Header의 크기 20byte
+	public final static int TCPHEADER = 24;
+//	byte[] chatDST = new byte[6];
+//	byte[] arpDST = new byte[6];
+	//    TCP Header의 크기 24byte
 
 	private class _TCPLayer_HEADER {
 		byte[] tcp_sport; // source port
 		byte[] tcp_dport; // destination port
 		byte[] tcp_seq; // sequence number
 		byte[] tcp_ack; // acknowledged sequence
-		byte[] tcp_offset; // no use
+		byte[] tcp_offset; // no use => GARP 구분 용으로 0x44로 지정
 		byte[] tcp_flag; // control flag
 		byte[] tcp_window; // no use
 		byte[] tcp_cksum; // check sum
-		byte[] tcp_urgptr; // no use
+		byte[] tcp_urgptr; // no use 
 		byte[] Padding;
 		byte[] tcp_data; // data part
 
@@ -44,7 +47,7 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	public byte[] objToByte(_TCPLayer_HEADER Header,byte[] input,int length){
-		byte[] buf = new byte[length+24];
+		byte[] buf = new byte[length+TCPHEADER];
 
 		buf[0]=Header.tcp_sport[0];
 		buf[1]=Header.tcp_sport[1];
@@ -72,14 +75,16 @@ public class TCPLayer implements BaseLayer {
 		buf[23]=Header.Padding[3];
 
 		for(int i=0;i<length;i++){
-			buf[24+i]=input[i];
+			buf[TCPHEADER+i]=input[i];
 		}
 
 		return buf;
 
 	}
 
-	public synchronized boolean Send(byte[] input, int length) {
+public synchronized boolean Send(byte[] input, int length) {
+	
+	System.out.println("TCP send input length : "+input.length);
 		
 		
 		m_sHeader.tcp_sport[0]=(byte)0x00;
@@ -89,12 +94,15 @@ public class TCPLayer implements BaseLayer {
 		
 		byte[] data = objToByte(m_sHeader,input,length);
 
-		this.GetUnderLayer().Send(data,length+24);
+		this.GetUnderLayer().Send(data,length+TCPHEADER);
+		System.out.println("TCP->IP send");
 		return true;
 
 	}
 
 	public boolean Send(byte[] input, int length, Object ob) {
+		
+		System.out.println("TCP send input length : "+input.length);
 
 		//		 상위계층의종류에따라서헤더에상위프로토콜형태저장후물리적계층으로 Ethernet frame 전달(enet_type) 
 		//		§ 0x2080: ChattingAppLayer 
@@ -112,7 +120,7 @@ public class TCPLayer implements BaseLayer {
 			byte[] frame = objToByte(m_sHeader,input,length);
 			
 			
-			GetUnderLayer().Send(frame,length+24);
+			GetUnderLayer().Send(frame,length+TCPHEADER);
 
 		}else if(ob == this.GetUpperLayer(1).GetLayerName()){
 
@@ -122,8 +130,21 @@ public class TCPLayer implements BaseLayer {
 			m_sHeader.tcp_dport[1]=(byte)0x90;	
 
 			byte[] stream = objToByte(m_sHeader,input,length);
-			GetUnderLayer().Send(stream,length+24);
+			GetUnderLayer().Send(stream,length+TCPHEADER);
 
+		}else if(ob=="GARP") { //GARP에서 send 눌렀을 경우의 TCP send
+			m_sHeader.tcp_sport[0]=(byte)0x20;
+			m_sHeader.tcp_sport[1]=(byte)0x70;	
+			m_sHeader.tcp_dport[0]=(byte)0x20;
+			m_sHeader.tcp_dport[1]=(byte)0x70;	
+			
+			m_sHeader.tcp_offset[0] = (byte)0x44;
+			
+			byte[] modiMac = objToByte(m_sHeader,input,length);
+			System.out.println("GARP->TCP SEND");
+			GetUnderLayer().Send(modiMac,length+TCPHEADER);
+
+			
 		}
 
 		return true;
@@ -136,6 +157,8 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	public boolean Receive(byte[] input) {
+		
+		System.out.println("TCP receive input length : "+input.length);
 
 		byte[] data;
 
@@ -159,13 +182,12 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
+		byte[] rebuf = new byte[length-TCPHEADER];
 
-		byte[] rebuf = new byte[length-24];
-
-		for (int i = 0; i < length-24; i++) {
-
-			rebuf[i] = input[24 + i];
+		for (int i = 0; i < length-TCPHEADER; i++) {
+			rebuf[i] = input[TCPHEADER + i];
 		}
+		
 		return rebuf;
 	}
 

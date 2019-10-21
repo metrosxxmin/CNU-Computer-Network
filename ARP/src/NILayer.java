@@ -14,12 +14,13 @@ public class NILayer implements BaseLayer {
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-
+	private Receive_Thread thread = null; 
 	int m_iNumAdapter;
 	public Pcap m_AdapterObject;
 	public PcapIf device;
 	public List<PcapIf> m_pAdapterList;
 	StringBuilder errbuf = new StringBuilder();
+	
 
 	public NILayer(String pName) {
 		// super(pName);
@@ -66,11 +67,15 @@ public class NILayer implements BaseLayer {
 	}
 
 	public boolean Receive() {
-		Receive_Thread thread = new Receive_Thread(m_AdapterObject, this.GetUpperLayer(0));
-		Thread obj = new Thread(thread);
-		obj.start();
-
-		return false;
+		if(thread != null) {
+			return false;
+		}
+		else {
+			thread = new Receive_Thread(m_AdapterObject, this.GetUpperLayer(0));
+			Thread obj = new Thread(thread);
+			obj.start();
+			return false;
+		}
 	}
 
 	@Override

@@ -7,7 +7,12 @@ public class IPLayer implements BaseLayer {
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUnderLayerIP = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
+	public final static int IPHEADER = 20;
 	
+	byte[] chatDST_mac = new byte[6];
+	byte[] arpDST_mac = new byte[6];
+	byte[] chatDST_ip = new byte[4];
+	byte[] arpDST_ip = new byte[4];
 	
 	private class _IPLayer_HEADER {
 		byte[] ip_versionLen;	// ip version -> IPv4 : 4
@@ -65,7 +70,7 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public byte[] ObjToByte(_IPLayer_HEADER Header, byte[] input, int length) {
-		byte[] buf = new byte[length + 20];
+		byte[] buf = new byte[length + IPHEADER];
 
 		buf[0] = Header.ip_versionLen[0];
 		buf[1] = Header.ip_serviceType[0];
@@ -84,28 +89,48 @@ public class IPLayer implements BaseLayer {
 			buf[16 + i] = Header.ip_dstaddr[i];
 		}
 		for (int i = 0; i < length; i++) {
-			buf[20 + i] = input[i];
+			buf[IPHEADER + i] = input[i];
 		}
 		return buf;
 	}
 
 	
-	public boolean Send(byte[] input, int length) {
+public boolean Send(byte[] input, int length) {
 		
+//	   System.out.println("IP send input length : "+input.length);
 		
 		if((input[2]==(byte)0x20 && input[3]==(byte)0x80) || (input[2]==(byte)0x20 && input[3]==(byte)0x90) ) {
 			m_sHeader.ip_offset[0] = 0x00;
 			m_sHeader.ip_offset[1] = 0x03;
 			
 			byte[] bytes = ObjToByte(m_sHeader,input,length);
-			this.GetUnderLayer(1).Send(bytes,length+20);
+			this.GetUnderLayer(1).Send(bytes,length+IPHEADER);
 			return true;
-		}else {
+			
+		}else if(input[2]==(byte)0x20 && input[3]==(byte)0x70){
+			byte[] opcode = new byte[2];
+			opcode[0] = (byte)0x00;
+			opcode[1] = (byte)0x04;
+			
+			byte[] macAdd = new byte[6];
+			System.arraycopy(input, 24, macAdd, 0,6); //garp의 mac주소 뽑아내기
+			byte[] bytes = ObjToByte(m_sHeader,input,length);
+//			System.out.println("GARP : TCP->IP send");
+			
+			
+			((ARPLayer)this.GetUnderLayer(0)).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_srcaddr,macAdd,new byte[6],opcode);
+
+			return true;
+			
+		}
+		else {
 			byte[] opcode = new byte[2];
 			opcode[0] = (byte)0x00;
 			opcode[1] = (byte)0x01;
 			byte[] bytes = ObjToByte(m_sHeader,input,length);
-			((ARPLayer)this.GetUnderLayer(0)).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_dstaddr,opcode);
+//			System.out.println("ARP : TCP->IP->ARP send");
+			((ARPLayer)this.GetUnderLayer(0)).Send(m_sHeader.ip_srcaddr,m_sHeader.ip_dstaddr,new byte[6],new byte[6],opcode);
+
 			return true;
 		}
 	}
@@ -121,6 +146,8 @@ public class IPLayer implements BaseLayer {
 	}
 
 	public synchronized boolean Receive(byte[] input) {
+		
+		System.out.println("IP receive input length : "+input.length);
 		byte[] data = RemoveCappHeader(input, input.length);
 	
 		if(srcme_Addr(input)) {

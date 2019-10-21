@@ -7,9 +7,11 @@ public class EthernetLayer implements BaseLayer {
 	public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	public final static int HEARER_SIZE = 14;
-	
+	private static byte[] arp_mac_dstaddr = null;
+
 	public byte[] chat_file_dstaddr;
-	
+	public byte[] ex_ethernetaddr = new byte[6];
+
 	private class _ETHERNET_ADDR {
 		private byte[] addr = new byte[6];
 
@@ -48,32 +50,35 @@ public class EthernetLayer implements BaseLayer {
 
 	public void SetEnetSrcAddress(byte[] srcAddress) {
 		// TODO Auto-generated method stub
-		m_sHeader.enet_srcaddr.addr[0]= srcAddress[0];
-		m_sHeader.enet_srcaddr.addr[1]= srcAddress[1];
-		m_sHeader.enet_srcaddr.addr[2]= srcAddress[2];
-		m_sHeader.enet_srcaddr.addr[3]= srcAddress[3];
-		m_sHeader.enet_srcaddr.addr[4]= srcAddress[4];
-		m_sHeader.enet_srcaddr.addr[5]= srcAddress[5];
+		m_sHeader.enet_srcaddr.addr[0] = srcAddress[0];
+		m_sHeader.enet_srcaddr.addr[1] = srcAddress[1];
+		m_sHeader.enet_srcaddr.addr[2] = srcAddress[2];
+		m_sHeader.enet_srcaddr.addr[3] = srcAddress[3];
+		m_sHeader.enet_srcaddr.addr[4] = srcAddress[4];
+		m_sHeader.enet_srcaddr.addr[5] = srcAddress[5];
 
 	}
-	
+
 	public void SetEnetDstAddress(byte[] dstAddress) {
 		// TODO Auto-generated method stub
-		m_sHeader.enet_dstaddr.addr[0]= dstAddress[0];
-		m_sHeader.enet_dstaddr.addr[1]= dstAddress[1];
-		m_sHeader.enet_dstaddr.addr[2]= dstAddress[2];
-		m_sHeader.enet_dstaddr.addr[3]= dstAddress[3];
-		m_sHeader.enet_dstaddr.addr[4]= dstAddress[4];
-		m_sHeader.enet_dstaddr.addr[5]= dstAddress[5];
+		m_sHeader.enet_dstaddr.addr[0] = dstAddress[0];
+		m_sHeader.enet_dstaddr.addr[1] = dstAddress[1];
+		m_sHeader.enet_dstaddr.addr[2] = dstAddress[2];
+		m_sHeader.enet_dstaddr.addr[3] = dstAddress[3];
+		m_sHeader.enet_dstaddr.addr[4] = dstAddress[4];
+		m_sHeader.enet_dstaddr.addr[5] = dstAddress[5];
 
 	}
-	
-//	public void Set_CF_EnetDstAddress(byte[] dstAddress) {
-//		// TODO Auto-generated method stub
-//		chat_file_dstaddr = dstAddress;
-//
-//	}
 
+	public static void SetMacAddrDstAddr(byte[] dstAddress) {
+		arp_mac_dstaddr = dstAddress;
+	}
+
+	//   public void Set_CF_EnetDstAddress(byte[] dstAddress) {
+	//      // TODO Auto-generated method stub
+	//      chat_file_dstaddr = dstAddress;
+	//
+	//   }
 
 	public byte[] ObjToByteDATA(_ETHERNET_HEADER Header, byte[] input, int length) {
 		byte[] buf = new byte[length + HEARER_SIZE];
@@ -92,9 +97,8 @@ public class EthernetLayer implements BaseLayer {
 		buf[11] = Header.enet_srcaddr.addr[5];
 		buf[12] = Header.enet_type[0];
 		buf[13] = Header.enet_type[1];
-//		buf[12] = 0x08;
-//		buf[13] = 0x06;
-		
+
+
 		for (int i = 0; i < length; i++) {
 			buf[HEARER_SIZE + i] = input[i];
 
@@ -102,67 +106,102 @@ public class EthernetLayer implements BaseLayer {
 
 		return buf;
 	}
-	public boolean Send(byte[] input, int length){
-		
-		m_sHeader.enet_data=input;
-		if(m_sHeader.enet_data.length > 1500) return false;
-		
-		if(input[6]==0x00 && input[7]==0x03) {//IP
-			m_sHeader.enet_data=input;
-			m_sHeader.enet_type[0]=(byte)0x08;
-			m_sHeader.enet_type[1]=(byte)0x00;	
 
+	public boolean Send(byte[] input, int length) {
 
-			byte[] frame = ObjToByteDATA(m_sHeader,input,length);
-			GetUnderLayer().Send(frame,length+HEARER_SIZE);
+		//	   System.out.println("Ethernet send input length : "+input.length);
+
+		m_sHeader.enet_data = input;
+		if (m_sHeader.enet_data.length > 1500)
+			return false;
+
+		if (input[6] == 0x00 && input[7] == 0x03) {// IP
+			m_sHeader.enet_data = input;
+			m_sHeader.enet_type[0] = (byte) 0x08;
+			m_sHeader.enet_type[1] = (byte) 0x00;
+
+			m_sHeader.enet_dstaddr.addr = ((IPLayer)GetUpperLayer(1)).chatDST_mac;
+
+			byte[] frame = ObjToByteDATA(m_sHeader, input, length);
 			
-
-		}else {//ARP
+			String macAddress = String.format("%X:", frame[0]) + String.format("%X:", frame[1])
+			+ String.format("%X:", frame[2]) + String.format("%X:", frame[3])
+			+ String.format("%X:", frame[4]) + String.format("%X", frame[5]);
+		
 			
-			m_sHeader.enet_data=input;
-			m_sHeader.enet_type[0]=(byte)0x08;
-			m_sHeader.enet_type[1]=(byte)0x06;	
+			System.out.println("보내는 거 dst mac : " + macAddress);
+			
+			String macAddress1 = String.format("%X:", frame[6]) + String.format("%X:", frame[7])
+			+ String.format("%X:", frame[8]) + String.format("%X:", frame[9])
+			+ String.format("%X:", frame[10]) + String.format("%X", frame[11]);
+		
+			
+			System.out.println("보내는 거 src mac : " + macAddress1);
+
+			
+			GetUnderLayer().Send(frame, length + HEARER_SIZE);
 
 
-			if(input[6]==0x00 && input[7]==0x01) {
+		} else {// ARP
 
-				m_sHeader.enet_dstaddr.addr[0] = (byte)0xff;
-				m_sHeader.enet_dstaddr.addr[1] = (byte)0xff;
-				m_sHeader.enet_dstaddr.addr[2] = (byte)0xff;
-				m_sHeader.enet_dstaddr.addr[3] = (byte)0xff;
-				m_sHeader.enet_dstaddr.addr[4] = (byte)0xff;
-				m_sHeader.enet_dstaddr.addr[5] = (byte)0xff;
+			m_sHeader.enet_data = input;
+			m_sHeader.enet_type[0] = (byte) 0x08;
+			m_sHeader.enet_type[1] = (byte) 0x06;
+
+			if (input[6] == 0x00 && input[7] == 0x01) {
+
+				m_sHeader.enet_dstaddr.addr[0] = (byte) 0xff;
+				m_sHeader.enet_dstaddr.addr[1] = (byte) 0xff;
+				m_sHeader.enet_dstaddr.addr[2] = (byte) 0xff;
+				m_sHeader.enet_dstaddr.addr[3] = (byte) 0xff;
+				m_sHeader.enet_dstaddr.addr[4] = (byte) 0xff;
+				m_sHeader.enet_dstaddr.addr[5] = (byte) 0xff;
+
+
+			} else if (input[6] == 0x00 && input[7] == 0x02) {
 				
-
-
-			}else if(input[6]==0x00 && input[7]==0x02) {
-
-				m_sHeader.enet_dstaddr.addr[0] = input[18];
-				m_sHeader.enet_dstaddr.addr[1] = input[19];
-				m_sHeader.enet_dstaddr.addr[2] = input[20];
-				m_sHeader.enet_dstaddr.addr[3] = input[21];
-				m_sHeader.enet_dstaddr.addr[4] = input[22];
-				m_sHeader.enet_dstaddr.addr[5] = input[23];
 				
+				if(input[18]==0x00 &&input[19]==0x00 &&input[20]==0x00 &&input[21]==0x00 &&input[22]==0x00 &&input[23]==0x00) {
+					m_sHeader.enet_dstaddr.addr[0] = (byte) 0xff;
+					m_sHeader.enet_dstaddr.addr[1] = (byte) 0xff;
+					m_sHeader.enet_dstaddr.addr[2] = (byte) 0xff;
+					m_sHeader.enet_dstaddr.addr[3] = (byte) 0xff;
+					m_sHeader.enet_dstaddr.addr[4] = (byte) 0xff;
+					m_sHeader.enet_dstaddr.addr[5] = (byte) 0xff;
+				}else {
+					m_sHeader.enet_dstaddr.addr[0] = input[18];
+					m_sHeader.enet_dstaddr.addr[1] = input[19];
+					m_sHeader.enet_dstaddr.addr[2] = input[20];
+					m_sHeader.enet_dstaddr.addr[3] = input[21];
+					m_sHeader.enet_dstaddr.addr[4] = input[22];
+					m_sHeader.enet_dstaddr.addr[5] = input[23];
+				}
 
 			}
 
 
-			byte[] frame = ObjToByteDATA(m_sHeader,input,length);
 
-			GetUnderLayer().Send(frame,length+HEARER_SIZE);
+			byte[] frame = ObjToByteDATA(m_sHeader, input, length);
+
+			GetUnderLayer().Send(frame, length + HEARER_SIZE);
+			byte[] temp = new byte[6];
+			System.arraycopy(input, 8, temp, 0, 6);
+			System.arraycopy(m_sHeader.enet_srcaddr.addr, 0, ex_ethernetaddr, 0, 6);
+			
+			SetEnetSrcAddress(temp); //mac 주소 새로 저장 (garp든 아니든)
+			
 
 		}
-		
+
 		return true;
 	}
 
 	public byte[] RemoveCappHeader(byte[] input, int length) {
 
-		byte[] rebuf = new byte[length-HEARER_SIZE];
-		m_sHeader.enet_data = new byte[length-HEARER_SIZE];
+		byte[] rebuf = new byte[length - HEARER_SIZE];
+		m_sHeader.enet_data = new byte[length - HEARER_SIZE];
 
-		for (int i = 0; i < length-HEARER_SIZE; i++) {
+		for (int i = 0; i < length - HEARER_SIZE; i++) {
 			m_sHeader.enet_data[i] = input[HEARER_SIZE + i];
 			rebuf[i] = input[HEARER_SIZE + i];
 		}
@@ -170,20 +209,45 @@ public class EthernetLayer implements BaseLayer {
 	}
 
 	public boolean Receive(byte[] input) {
-
+		//	   System.out.println("ETHERNET의 RECEIVE의 input length : "+input.length);
 		byte[] data;
 		data = RemoveCappHeader(input, input.length);
-
 		
-		if(!srcme_Addr(input)) {
-			if(bro_Addr(input) || dstme_Addr(input)) {
-				
-				if(input[12] == 0x08 && input[13] == 0x00 ) {
-					//IP Layer로 보내기
-					this.GetUpperLayer(1).Receive(data);			
-				}else {
-					//ARP Layer로 보내기
-					this.GetUpperLayer(0).Receive(data);
+		String macAddress = String.format("%X:", input[0]) + String.format("%X:", input[1])
+		+ String.format("%X:", input[2]) + String.format("%X:", input[3])
+		+ String.format("%X:", input[4]) + String.format("%X", input[5]);
+		
+		String macAddress1 = String.format("%X:", m_sHeader.enet_srcaddr.addr[0]) + String.format("%X:", m_sHeader.enet_srcaddr.addr[1])
+		+ String.format("%X:", m_sHeader.enet_srcaddr.addr[2]) + String.format("%X:", m_sHeader.enet_srcaddr.addr[3])
+		+ String.format("%X:", m_sHeader.enet_srcaddr.addr[4]) + String.format("%X", m_sHeader.enet_srcaddr.addr[5]);
+		
+		System.out.println("온거 src mac : " + macAddress);
+
+		System.out.println("내거 src mac : " + macAddress1);
+
+		if (!srcme_Addr(input)) {
+			if (bro_Addr(input) || dstme_Addr(input)) {
+
+				if (input[12] == 0x08 && input[13] == 0x00 && dst_you(input)) {
+
+					// IP Layer로 보내기
+					this.GetUpperLayer(1).Receive(data);
+
+				}
+
+				else {
+					if(ex_ethernetaddr != null){
+						for (int i = 0; i < 6; i++) {
+							if (input[i + 6] != ex_ethernetaddr[i]) {
+								this.GetUpperLayer(0).Receive(data);
+								return true;	
+							}
+						}
+					}else {
+						System.out.println("ARP레이어로 보내기");
+						// ARP Layer로 보내기
+						this.GetUpperLayer(0).Receive(data);
+					}
 				}
 				return true;
 			}
@@ -192,24 +256,37 @@ public class EthernetLayer implements BaseLayer {
 		return true;
 	}
 
-
-	public boolean dstme_Addr(byte[] add) {//주소확인
-		for(int i = 0;i<6;i++) {
-			if(add[i]!=m_sHeader.enet_srcaddr.addr[i]) return false;
+	public boolean dstme_Addr(byte[] add) {// 주소확인
+		for (int i = 0; i < 6; i++) {
+			if (add[i] != m_sHeader.enet_srcaddr.addr[i])
+				return false;
 		}
 
 		return true;
 	}
-	public boolean srcme_Addr(byte[] add) {//주소확인
-		for(int i = 0;i<6;i++) {
-			if(add[i+6]!=m_sHeader.enet_srcaddr.addr[i]) return false;
+
+	public boolean srcme_Addr(byte[] add) {// 주소확인
+		for (int i = 0; i < 6; i++) {
+			if (add[i + 6] != m_sHeader.enet_srcaddr.addr[i])
+				return false;
 		}
 
 		return true;
 	}
-	public boolean bro_Addr(byte[] add) {//주소확인
-		for(int i = 0;i<6;i++) {
-			if(add[i]!=(byte)0xff) return false;
+
+	public boolean dst_you(byte[] add) {// 주소확인
+		for (int i = 0; i < 6; i++) {
+			if (add[i + 6] != ((IPLayer)GetUpperLayer(1)).chatDST_mac[i])
+				return false;
+		}
+
+		return true;
+	}
+
+	public boolean bro_Addr(byte[] add) {// 주소확인
+		for (int i = 0; i < 6; i++) {
+			if (add[i] != (byte) 0xff)
+				return false;
 		}
 		return true;
 	}
@@ -254,6 +331,7 @@ public class EthernetLayer implements BaseLayer {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 	}
+
 	@Override
 	public BaseLayer GetUnderLayer(int nindex) {
 		return null;
