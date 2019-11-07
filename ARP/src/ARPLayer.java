@@ -25,8 +25,6 @@ public class ARPLayer implements BaseLayer {
 
    public final static int ARPHEADER = 28;
 
-   // byte[] modifyMac = new byte[6];
-
    // inner class for dealing with Mac address
    private class _ARP_MAC_ADDR {
       private byte[] addr = new byte[6];
@@ -89,22 +87,6 @@ public class ARPLayer implements BaseLayer {
          Thread obj = new Thread(thread);
          obj.start();
       }
-//      Object[] value = new Object[4];
-//
-//      byte[] mac = new byte[6];
-//      mac[0]=(byte)1;
-//      mac[1]=(byte)1;
-//      mac[2]=(byte)1;
-//      mac[3]=(byte)1;
-//      mac[4]=(byte)1;
-//      mac[5]=(byte)1;
-//      value[0]=0;
-//      value[1]=mac;
-//      value[2]="Complete";
-//      value[3]=System.currentTimeMillis();
-//      String ipaddd="168.188.129.5";
-//      cacheTable.put(ipaddd, value);
-
    }
 
    public byte[] ObjToByte(_ARP_HEADER m_sHeader) {
@@ -131,7 +113,7 @@ public class ARPLayer implements BaseLayer {
    }
 
    /*
-    * IP Layer¿¡¼­ È£ÃâµÇ´Â SendÀÏ °æ¿ì, opcode´Â 1ÀÌ¸ç, ARP Layer¿¡¼­ È£ÃâµÇ´Â SendÀÏ °æ¿ì opcode´Â 2´Ù.
+    * IP Layerì—ì„œ í˜¸ì¶œë˜ëŠ” Sendì¼ ê²½ìš°, opcodeëŠ” 1ì´ë©°, ARP Layerì—ì„œ í˜¸ì¶œë˜ëŠ” Sendì¼ ê²½ìš° opcodeëŠ” 2ë‹¤.
     */
    public boolean Send(byte[] arp_protocol_srcaddr, byte[] arp_protocol_dstaddr, byte[] mac_srcaddr,
          byte[] mac_dstaddr, byte[] arp_opcode) {
@@ -162,7 +144,7 @@ public class ARPLayer implements BaseLayer {
          m_sHeader._arp_mac_srcaddr.addr = arp_mac_srcaddr;
 
       } else if (arp_opcode[0] == (byte) 0x00 && arp_opcode[1] == (byte) 0x04) {
-         System.out.println("GARP°¡ ¼öÁ¤µÇ¾î senderÀÇ arp ·¹ÀÌ¾î±îÁö µé¾î¿È");
+         System.out.println("GARPê°€ ìˆ˜ì •ë˜ì–´ senderì˜ arp ë ˆì´ì–´ê¹Œì§€ ë“¤ì–´ì˜´");
 
          arp_opcode[0] = (byte) 0x00;
          arp_opcode[1] = (byte) 0x01;
@@ -171,7 +153,7 @@ public class ARPLayer implements BaseLayer {
          m_sHeader._arp_protocol_srcaddr.addr = arp_protocol_srcaddr;
          m_sHeader._arp_protocol_dstaddr.addr = arp_protocol_dstaddr;
 
-         System.out.println("GARP º¸³¿ " + arp_protocol_srcaddr + ":" + arp_protocol_dstaddr);
+         System.out.println("GARP ë³´ëƒ„ " + arp_protocol_srcaddr + ":" + arp_protocol_dstaddr);
          m_sHeader._arp_mac_srcaddr.addr = mac_srcaddr;
 
       } else {
@@ -196,14 +178,11 @@ public class ARPLayer implements BaseLayer {
       m_sHeader.arp_hwAddrLength[0] = 6;
       m_sHeader.arp_protoAddrLength[0] = 4;
 
-      // m_sHeader._arp_mac_dstaddr.addr = arp_mac_dstaddr;
-
       m_sHeader.arp_opcode = arp_opcode;
 
       byte[] bytes = ObjToByte(m_sHeader);
 
       updateARPCacheTable();
-      // System.out.println("TCP->IP->ARP->Ethernet send");
 
       (this.GetUnderLayer()).Send(bytes, bytes.length);
       arp_mac_dstaddr = null;
@@ -219,8 +198,6 @@ public class ARPLayer implements BaseLayer {
       byte[] dstMac = new byte[6];
       byte[] targetIP = new byte[4];
 
-      // System.out.println("ARPÀÇ RECEIVEÀÇ input length : " + input.length);
-
       System.arraycopy(message, 14, dstIP, 0, 4);
       System.arraycopy(message, 8, dstMac, 0, 6);
       System.arraycopy(message, 24, targetIP, 0, 4);
@@ -234,15 +211,8 @@ public class ARPLayer implements BaseLayer {
             + (m_sHeader._arp_protocol_srcaddr.addr[2] & 0xFF) + "."
             + (m_sHeader._arp_protocol_srcaddr.addr[3] & 0xFF);
 
-//      System.out.println("ipAddressToString : "+ipAddressToString);
-//      System.out.println("targetIpAddressToString : "+ targetIpAddressToString);
-//      System.out.println("srcIpAddressToString : "+srcIpAddressToString);
-
       if (message[6] == (byte) 0x00 && message[7] == (byte) 0x01) { // ARP-request Receive ("Complete")
-
          if (ipAddressToString.equals(targetIpAddressToString) && ipAddressToString.equals(srcIpAddressToString)) {
-
-            System.out.println("Áßº¹ ÁÖ¼ÒÀÓ");
 
             byte[] newOp = new byte[2];
             newOp[0] = (byte) 0x00;
@@ -250,7 +220,7 @@ public class ARPLayer implements BaseLayer {
 
             // arp_mac_dstaddr = tempString;
             Send(m_sHeader._arp_protocol_srcaddr.addr, m_sHeader._arp_protocol_srcaddr.addr, arp_mac_srcaddr,
-                  new byte[6], newOp); // garp ¿¡·¯ reply send
+                  new byte[6], newOp); // garp ì—ëŸ¬ reply send
             return true;
          }
 
@@ -264,7 +234,6 @@ public class ARPLayer implements BaseLayer {
          SetMacAddrDstAddr(dstMac);
          if (proxyTable.containsKey(targetIpAddressToString)) {
             Send(targetIP, dstIP, new byte[6], new byte[6], newOp);
-//            return true;
          }
          if (!cacheTable.containsKey(ipAddressToString)) {
 
@@ -278,7 +247,7 @@ public class ARPLayer implements BaseLayer {
          } else {
 
             value[0] = cacheTable.get(ipAddressToString)[0];
-            value[1] = dstMac; // mac ÁÖ¼Ò
+            value[1] = dstMac; // mac address
             value[2] = cacheTable.get(ipAddressToString)[2];
             value[3] = System.currentTimeMillis();
 
@@ -293,7 +262,6 @@ public class ARPLayer implements BaseLayer {
          newOp[0] = (byte) 0x00;
          newOp[1] = (byte) 0x02;
 
-         // EthernetLayer.SetMacAddrDstAddr(dstMac);
          SetMacAddrDstAddr(dstMac);
 
          if (!proxyTable.containsKey(targetIpAddressToString)) {
@@ -302,9 +270,7 @@ public class ARPLayer implements BaseLayer {
                   return false;
             }
             Send(m_sHeader._arp_protocol_srcaddr.addr, dstIP, new byte[6], arp_mac_dstaddr, newOp);
-
          }
-//         Send(targetIP, dstIP, new byte[6], new byte[6], newOp);
 
       } else if (message[6] == (byte) 0x00 && message[7] == (byte) 0x02) { // ARP-reply Receive ("Incomplete" ->
 
@@ -316,11 +282,11 @@ public class ARPLayer implements BaseLayer {
 
             JOptionPane.showMessageDialog(null, "duplicate IP address sent from Ethernet address :" + macAddress);
             return false;
-
          }
 
-         if (srcIpAddressToString.equals(ipAddressToString))
+         if (srcIpAddressToString.equals(ipAddressToString)) {
             return false;
+         }
 
          if (cacheTable.containsKey(ipAddressToString)) {
             System.out.println(cacheTable.get(ipAddressToString)[2]);
@@ -333,13 +299,11 @@ public class ARPLayer implements BaseLayer {
          cacheTable.replace(ipAddressToString, value);
 
          updateARPCacheTable();
-
       }
       return false;
    }
 
    public void updateARPCacheTable() {
-
       if (ApplicationLayer.exist) {
 
          Set keyS = cacheTable.keySet();
@@ -358,10 +322,8 @@ public class ARPLayer implements BaseLayer {
                      + String.format("%X:", maxAddr[4]) + String.format("%X", maxAddr[5]);
                ApplicationLayer.TotalArea.append("       " + key + "\t" + macAddress + "\t complete\n");
             }
-
          }
       }
-
    }
 
    @Override
@@ -468,5 +430,4 @@ public class ARPLayer implements BaseLayer {
          }
       }
    }
-
 }
