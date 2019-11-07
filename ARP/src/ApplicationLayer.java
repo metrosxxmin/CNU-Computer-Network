@@ -41,8 +41,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	
 	String path;
 	JTextArea proxyArea;
-
-	//private static LayerManager m_LayerMgr = new LayerManager();
+	
 	int selected_index;
 	private JTextField IPAddressWrite;
 
@@ -104,10 +103,10 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 		btnAllDelete = new JButton("All Delete");// setting
 
-	      btnAllDelete.setBounds(240, 263, 165, 35);
-	      ARP_Cache.add(btnAllDelete);
+	      	btnAllDelete.setBounds(240, 263, 165, 35);
+	      	ARP_Cache.add(btnAllDelete);
 
-	      btnAllDelete.addActionListener(new ActionListener() {
+	      	btnAllDelete.addActionListener(new ActionListener() {
 
 	         public void actionPerformed(ActionEvent arg0) {
 	            Set key = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.keySet();
@@ -144,8 +143,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 					for(int i=0;i<4;i++) ipAddr_dst[i] = (byte)Integer.parseInt(ipAddr_st[i]);
 
 					((IPLayer) m_LayerMgr.GetLayer("IP")).SetIPDstAddress(ipAddr_dst);
-//					 ((IPLayer) m_LayerMgr.GetLayer("IP")).arpDST_mac=h;
-//		             ((IPLayer) m_LayerMgr.GetLayer("IP")).arpDST_ip=ipAddr_dst;
 					
 					p_UnderLayer.Send(bytes, bytes.length);
 
@@ -170,7 +167,7 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	            if(del_ip != null) {
 	               if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
 	                  Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(del_ip);
-	                  if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { //1占쎈／�뜝占� �뜝�럩逾졾뜝�럥由��슖�댙�삕 �뜝�럡�뀣�뜝�럩紐든춯濡녹삕 delete �뜝�럥�닱�뜝�럥由�占썩뫅�삕 �뜝�룞�삕�뼨�먯삕
+	                  if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { 
 	                     ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
 	                     ((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
 	                  }
@@ -253,9 +250,8 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnEnd.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-//				System.exit(0);
 				exist = false;
-			dispose();
+				dispose();
 			}
 		});
 
@@ -265,7 +261,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 		btnCancel.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-//				System.exit(0);
 				exist = false;
 				dispose();
 			}
@@ -328,8 +323,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 
 	public boolean Receive(byte[] input) {
 		byte[] data = input;
-
-
 		return false;
 	}
 
@@ -338,8 +331,9 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
 		// TODO Auto-generated method stub
-		if (pUnderLayer == null)
+		if (pUnderLayer == null) {
 			return;
+		}
 		this.p_UnderLayer = pUnderLayer;
 	}
 
@@ -378,7 +372,6 @@ public class ApplicationLayer extends JFrame implements BaseLayer {
 	public void SetUpperUnderLayer(BaseLayer pUULayer) {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
-
 	}
 	
 	@Override
