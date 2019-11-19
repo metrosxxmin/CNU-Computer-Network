@@ -181,7 +181,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
         
 		JScrollPane Routing_jScrollPane=new JScrollPane(Routing_Jtable); 
 		
-		Routing_jScrollPane.setBounds(14, 30, 430, 20);
+		Routing_jScrollPane.setBounds(14, 24, 430, 20);
 
 
 		Routing_Table.add(Routing_jScrollPane); 
@@ -190,7 +190,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 		
 		RoutingArea = new JTextArea();
 		RoutingArea.setEditable(false);
-		RoutingArea.setBounds(14, 24, 430, 325);
+		RoutingArea.setBounds(14, 44, 430, 305);
 		Routing_Table.add(RoutingArea);
 
 
