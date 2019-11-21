@@ -124,7 +124,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 		for(int i=0;i<((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.size();i++)
 			adapterna[i] = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(i).getDescription();
 
-		JLabel choice1 = new JLabel("NIC 선택 1: ");
+		JLabel choice1 = new JLabel("NIC �꽑�깮 1: ");
 		choice1.setBounds(80, 20, 170, 20);
 		settingPanel.add(choice1);
 
@@ -134,7 +134,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 		settingPanel.add(strCombo0);
 		
 
-		JLabel choice2 = new JLabel("NIC 선택 2: ");
+		JLabel choice2 = new JLabel("NIC �꽑�깮 2: ");
 		choice2.setBounds(390, 20, 170, 20);
 		settingPanel.add(choice2);
 
@@ -172,7 +172,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 		Routing_Jtable = new JTable(Routing_model); 
 		
-		Routing_Jtable.getColumnModel().getColumn(0).setPreferredWidth(80);  //JTable �� �÷� ���� ����
+		Routing_Jtable.getColumnModel().getColumn(0).setPreferredWidth(80);  //JTable 占쏙옙 占시뤄옙 占쏙옙占쏙옙 占쏙옙占쏙옙
 		Routing_Jtable.getColumnModel().getColumn(1).setPreferredWidth(80);
 		Routing_Jtable.getColumnModel().getColumn(2).setPreferredWidth(80);
 		Routing_Jtable.getColumnModel().getColumn(3).setPreferredWidth(20);
@@ -209,25 +209,21 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 
 		btnRoutingDelete = new JButton("Delete");
-
-		btnRoutingDelete.setBounds(249, 355, 165, 35); //(249, 155, 165, 35);
-		Routing_Table.add(btnRoutingDelete);
-
 		btnRoutingDelete.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				String del_ip = JOptionPane.showInputDialog("Item's IP Address");
-				if(del_ip != null) {
-					if(((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.containsKey(del_ip)) {
-						Object[] value = ((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.get(del_ip);
-						if(System.currentTimeMillis()-(long)value[3]/1000 > 1) { 
-							((ARPLayer) m_LayerMgr.GetLayer("ARP")).cacheTable.remove(del_ip);
-							((ARPLayer) m_LayerMgr.GetLayer("ARP")).updateARPCacheTable();
-						}
+			public void actionPerformed(ActionEvent e) {
+				String entryDelete = JOptionPane.showInputDialog("Routing Entry");
+				if(entryDelete != null) {
+					if(((IPLayer) m_LayerMgr.GetLayer("IP")).router_Table.containsKey(entryDelete)) {
+						((IPLayer) m_LayerMgr.GetLayer("IP")).router_Table.remove(entryDelete);
 					}
 				}
+				IPLayer ipLayer = (IPLayer) m_LayerMgr.GetLayer("IP");
+				ipLayer.updateRouterTable();
+
 			}
 		});
+		btnRoutingDelete.setBounds(249, 355, 165, 35); //(249, 155, 165, 35);
+		Routing_Table.add(btnRoutingDelete);
 
 
 		JPanel ARP_Cache = new JPanel();
@@ -247,7 +243,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 		ARP_table = new JTable(ARP_model); 
 		
-		ARP_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable �� �÷� ���� ����
+		ARP_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable 占쏙옙 占시뤄옙 占쏙옙占쏙옙 占쏙옙占쏙옙
 		ARP_table.getColumnModel().getColumn(1).setPreferredWidth(100);
 		ARP_table.getColumnModel().getColumn(2).setPreferredWidth(40);
 		ARP_table.getColumnModel().getColumn(3).setPreferredWidth(10);
@@ -306,7 +302,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 		Proxy_table = new JTable(Proxy_model); 
 		
-		Proxy_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable �� �÷� ���� ����
+		Proxy_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable 占쏙옙 占시뤄옙 占쏙옙占쏙옙 占쏙옙占쏙옙
 		Proxy_table.getColumnModel().getColumn(1).setPreferredWidth(100);
 		Proxy_table.getColumnModel().getColumn(2).setPreferredWidth(40);
         

@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 public class IPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
@@ -179,7 +181,47 @@ public boolean Send(byte[] input, int length) {
 
 		return true;
 	}
-	
+
+	public void updateRouterTable() {
+
+		String printResult = "";
+		for (Iterator iterator = router_Table.keySet().iterator(); iterator.hasNext();) {
+			String keyIP = (String) iterator.next();
+			System.out.println(printResult);
+			Object[] obj = router_Table.get(keyIP);
+			printResult = printResult + "    " + keyIP;
+			byte[] Netmask_routeTable = (byte[]) router_Table.get(keyIP)[1];
+			byte[] Gateway_routeTable = (byte[]) router_Table.get(keyIP)[2];
+
+			String mask_String = "";
+			String gateway_String = "";
+			String flag_String = "";
+			String interface_String = obj[6] + "";
+
+			for (int j = 0; j < 3; j++)
+				mask_String = mask_String + (Netmask_routeTable[j] & 0xFF) + ".";
+			mask_String = mask_String + (Netmask_routeTable[3] & 0xFF);
+
+			for (int j = 0; j < 3; j++)
+				gateway_String = gateway_String + (Gateway_routeTable[j] & 0xFF) + ".";
+			gateway_String = gateway_String + (Gateway_routeTable[3] & 0xFF);
+
+			if ((boolean) obj[3]) {
+				flag_String += "U";
+			}
+			if ((boolean) obj[4]) {
+				flag_String += "G";
+			}
+			if ((boolean) obj[5]) {
+				flag_String += "H";
+			}
+
+			printResult = printResult + "    " + mask_String + "      " + gateway_String + "         " + flag_String
+					+ "        " + interface_String + "\n";
+		}
+		ApplicationLayer.RoutingArea.setText(printResult);
+
+	}
 	@Override
 	public String GetLayerName() {
 		// TODO Auto-generated method stub
