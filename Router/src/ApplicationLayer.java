@@ -124,7 +124,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 		for(int i=0;i<((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.size();i++)
 			adapterna[i] = ((NILayer) m_LayerMgr.GetLayer("NI")).m_pAdapterList.get(i).getDescription();
 
-		JLabel choice1 = new JLabel("NIC ¼±ÅÃ 1: ");
+		JLabel choice1 = new JLabel("NIC ì„ íƒ 1: ");
 		choice1.setBounds(80, 20, 170, 20);
 		settingPanel.add(choice1);
 
@@ -134,7 +134,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 		settingPanel.add(strCombo0);
 		
 
-		JLabel choice2 = new JLabel("NIC ¼±ÅÃ 2: ");
+		JLabel choice2 = new JLabel("NIC ì„ íƒ 2: ");
 		choice2.setBounds(390, 20, 170, 20);
 		settingPanel.add(choice2);
 
@@ -172,7 +172,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 		Routing_Jtable = new JTable(Routing_model); 
 		
-		Routing_Jtable.getColumnModel().getColumn(0).setPreferredWidth(80);  //JTable ÀÇ ÄÃ·³ ±æÀÌ Á¶Àý
+		Routing_Jtable.getColumnModel().getColumn(0).setPreferredWidth(80);  //JTable ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		Routing_Jtable.getColumnModel().getColumn(1).setPreferredWidth(80);
 		Routing_Jtable.getColumnModel().getColumn(2).setPreferredWidth(80);
 		Routing_Jtable.getColumnModel().getColumn(3).setPreferredWidth(20);
@@ -201,7 +201,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 		btnRoutingAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				ARPLayer arpLayer = (ARPLayer) m_LayerMgr.GetLayer("ARP");
-				if(arpLayer!=null) 	new routerAdd_Popup(((ARPLayer) m_LayerMgr.GetLayer("ARP")).proxyTable,proxyArea); 
+				if(arpLayer!=null) 	new routerAdd_Popup(((IPLayer) m_LayerMgr.GetLayer("IP")).router_Table,RoutingArea); 
 
 			}
 		});
@@ -247,7 +247,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 		ARP_table = new JTable(ARP_model); 
 		
-		ARP_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable ÀÇ ÄÃ·³ ±æÀÌ Á¶Àý
+		ARP_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ARP_table.getColumnModel().getColumn(1).setPreferredWidth(100);
 		ARP_table.getColumnModel().getColumn(2).setPreferredWidth(40);
 		ARP_table.getColumnModel().getColumn(3).setPreferredWidth(10);
@@ -306,7 +306,7 @@ public class ApplicationLayer  extends JFrame implements BaseLayer    {
 
 		Proxy_table = new JTable(Proxy_model); 
 		
-		Proxy_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable ÀÇ ÄÃ·³ ±æÀÌ Á¶Àý
+		Proxy_table.getColumnModel().getColumn(0).setPreferredWidth(100);  //JTable ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		Proxy_table.getColumnModel().getColumn(1).setPreferredWidth(100);
 		Proxy_table.getColumnModel().getColumn(2).setPreferredWidth(40);
         
