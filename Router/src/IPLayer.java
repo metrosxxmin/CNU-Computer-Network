@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class IPLayer implements BaseLayer {
 	public int nUpperLayerCount = 0;
@@ -8,6 +10,9 @@ public class IPLayer implements BaseLayer {
 	public ArrayList<BaseLayer> p_aUnderLayerIP = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	public final static int IPHEADER = 20;
+	
+
+	LinkedHashMap<String, Object[]> router_Table = new LinkedHashMap<String, Object[]>();
 	
 	byte[] chatDST_mac = new byte[6];
 	byte[] arpDST_mac = new byte[6];
@@ -113,7 +118,7 @@ public boolean Send(byte[] input, int length) {
 			opcode[1] = (byte)0x04;
 			
 			byte[] macAdd = new byte[6];
-			System.arraycopy(input, 24, macAdd, 0,6); //garpÀÇ macÁÖ¼Ò »Ì¾Æ³»±â
+			System.arraycopy(input, 24, macAdd, 0,6); //garpï¿½ï¿½ macï¿½Ö¼ï¿½ ï¿½Ì¾Æ³ï¿½ï¿½ï¿½
 			byte[] bytes = ObjToByte(m_sHeader,input,length);
 //			System.out.println("GARP : TCP->IP send");
 			
@@ -142,7 +147,7 @@ public boolean Send(byte[] input, int length) {
 		for(int i=0;i<length-20;i++) {
 			remvHeader[i] = input[i+20];
 		}
-		return remvHeader;// º¯°æÇÏ¼¼¿ä ÇÊ¿äÇÏ½Ã¸é
+		return remvHeader;// ï¿½ï¿½ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Ï½Ã¸ï¿½
 	}
 
 	public synchronized boolean Receive(byte[] input) {
@@ -160,14 +165,14 @@ public boolean Send(byte[] input, int length) {
 		return false;
 	}
 
-	public boolean dstme_Addr(byte[] add) {//ÁÖ¼ÒÈ®ÀÎ
+	public boolean dstme_Addr(byte[] add) {//ï¿½Ö¼ï¿½È®ï¿½ï¿½
 		for(int i = 0;i<4;i++) {
 			if(add[i+16]!=m_sHeader.ip_srcaddr[i]) return false;
 		}
 
 		return true;
 	}
-	public boolean srcme_Addr(byte[] add) {//ÁÖ¼ÒÈ®ÀÎ
+	public boolean srcme_Addr(byte[] add) {//ï¿½Ö¼ï¿½È®ï¿½ï¿½
 		for(int i = 0;i<4;i++) {
 			if(add[i+12]!=m_sHeader.ip_srcaddr[i]) return false;
 		}
