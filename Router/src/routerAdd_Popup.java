@@ -1,6 +1,7 @@
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -15,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
-public class routerAdd_Popup extends JFrame{
+public class routerAdd_Popup extends JFrame {
 
 	JTextArea input_Destination;
 	JTextArea input_Netmask;
@@ -27,17 +28,16 @@ public class routerAdd_Popup extends JFrame{
 	JLabel lbl_Flag;
 	JLabel lbl_Interface;
 	Container contentPane;
-	String[] interfaceName = {"0","1"};
+	String[] interfaceName = { "0", "1" };
 	String interface0 = interfaceName[0];
 
 	JCheckBox flagU;
 	JCheckBox flagG;
 	JCheckBox flagH;
 
+	public routerAdd_Popup(HashMap<String, Object[]> routerTable, JTextArea routingTable) {
 
-	public routerAdd_Popup(HashMap<String, Object[] > routerTable, JTextArea routingTable) {
-
-		setTitle("Router Table Entry Ãß°¡");
+		setTitle("Router Table Entry ï¿½ß°ï¿½");
 		setSize(450, 350);
 		setLocation(1200, 300);
 		getContentPane().setLayout(null);
@@ -47,7 +47,6 @@ public class routerAdd_Popup extends JFrame{
 		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-
 
 		lbl_Destination = new JLabel("Destination");
 		lbl_Destination.setBounds(50, 25, 90, 30);
@@ -81,15 +80,15 @@ public class routerAdd_Popup extends JFrame{
 		contentPane.add(lbl_Flag);
 
 		flagU = new JCheckBox("UP");
-		flagU.setBounds(150,135,50,20);
+		flagU.setBounds(150, 135, 50, 20);
 		contentPane.add(flagU);
 
 		flagG = new JCheckBox("Gateway");
-		flagG.setBounds(205,135,80,20);
+		flagG.setBounds(205, 135, 80, 20);
 		contentPane.add(flagG);
 
 		flagH = new JCheckBox("Host");
-		flagH.setBounds(285,135,60,20);
+		flagH.setBounds(285, 135, 60, 20);
 		contentPane.add(flagH);
 
 		lbl_Interface = new JLabel("Interface");
@@ -105,13 +104,11 @@ public class routerAdd_Popup extends JFrame{
 		});
 		contentPane.add(selectInterface);
 
-
-
-
 		JButton btnOk = new JButton("Ok");
 		btnOk.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if (!input_Destination.getText().equals("") && !input_Netmask.getText().equals("") && !input_Gateway.getText().contentEquals("")) {
+				if (!input_Destination.getText().equals("") && !input_Netmask.getText().equals("")
+						&& !input_Gateway.getText().contentEquals("")) {
 
 					StringTokenizer st = new StringTokenizer(input_Destination.getText(), ".");
 
@@ -131,7 +128,6 @@ public class routerAdd_Popup extends JFrame{
 						Netmask[i] = (byte) (s & 0xFF);
 					}
 
-
 					st = new StringTokenizer(input_Gateway.getText(), ".");
 
 					byte[] Gateway = new byte[4];
@@ -141,18 +137,64 @@ public class routerAdd_Popup extends JFrame{
 						Gateway[i] = (byte) (s & 0xFF);
 					}
 
-
-					System.out.println(flagU.isSelected()); //Ã¼Å©¿©ºÎ ¾Ë±â
+					System.out.println(flagU.isSelected()); // Ã¼Å©ï¿½ï¿½ï¿½ï¿½ ï¿½Ë±ï¿½
 					System.out.println(flagG.isSelected());
 					System.out.println(flagH.isSelected());
 					String interface_Num = interface0;
 
+					/* routing tableï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® */
 
-					/*routing table¿¡ Ãß°¡ÇÏ°í ¾÷µ¥ÀÌÆ®*/
+					Object[] value = new Object[7];
+					value[0] = Destination;
+					value[1] = Netmask;
+					value[2] = Gateway;
+					value[3] = flagU.isSelected();
+					value[4] = flagG.isSelected();
+					value[5] = flagH.isSelected();
+					value[6] = interface_Num;
 
+					routerTable.put(input_Destination.getText(), value);
+					String printResult = "";
+					for (Iterator iterator = routerTable.keySet().iterator(); iterator.hasNext();) {
+						String keyIP = (String) iterator.next();
+						System.out.println(printResult);
+						Object[] obj = routerTable.get(keyIP);
+						printResult = printResult + "    " + keyIP;
+						byte[] Netmask_routeTable = (byte[]) routerTable.get(keyIP)[1];
+						byte[] Gateway_routeTable = (byte[]) routerTable.get(keyIP)[2];
+						String destination_String = keyIP;
+						String mask_String = "";
+						String gateway_String = "";
+						String flag_String = "";
+						String interface_String = obj[6] + "";
+
+						for (int j = 0; j < 3; j++)
+							mask_String = mask_String + (Netmask_routeTable[j]&0xFF)+".";
+						mask_String = mask_String + (Netmask_routeTable[3]&0xFF);
+
+						for (int j = 0; j < 3; j++)
+							gateway_String = gateway_String + (Gateway_routeTable[j]&0xFF)+".";
+						gateway_String = gateway_String + (Gateway_routeTable[3]&0xFF);
+
+						if ((boolean) obj[3]) {
+							flag_String += "U";
+						}
+						if ((boolean) obj[4]) {
+							flag_String += "G";
+						}
+						if ((boolean) obj[5]) {
+							flag_String += "H";
+						}
+
+						printResult = printResult + "    " + mask_String + "      " + gateway_String + "         " + flag_String
+								+ "        " + interface_String + "\n";
+					}
+					int routerSize = routerTable.size();
+					System.out.println(routerTable.size() + "  " + printResult);
+					routingTable.setText(printResult);
 
 					dispose();
-				}
+				} // =======================
 
 			}
 		});
@@ -172,5 +214,3 @@ public class routerAdd_Popup extends JFrame{
 		setVisible(true);
 	}
 }
-
-
