@@ -15,6 +15,7 @@ public class IPLayer implements BaseLayer {
    byte[] arpDST_ip = new byte[4];
    
    public BaseLayer friendIPLayer;
+   public RoutingTable routingTable;
    
    private class _IPLayer_HEADER {
       byte[] ip_versionLen;   // ip version -> IPv4 : 4
@@ -60,7 +61,11 @@ public class IPLayer implements BaseLayer {
    public BaseLayer friendIPget() {
       return this.friendIPLayer;
    }
-   
+   public void setRouter(RoutingTable routingTable) {
+         this.routingTable = routingTable;
+   }
+      
+  
    public void SetIPSrcAddress(byte[] srcAddress) {
       // TODO Auto-generated method stub
       m_sHeader.ip_srcaddr[0]= srcAddress[0];
@@ -105,7 +110,7 @@ public class IPLayer implements BaseLayer {
    }
 
    
-public boolean Send(byte[] input, int length) {
+   public boolean Send(byte[] input, int length) {
       
 //      System.out.println("IP send input length : "+input.length);
       
@@ -123,7 +128,7 @@ public boolean Send(byte[] input, int length) {
          opcode[1] = (byte)0x04;
          
          byte[] macAdd = new byte[6];
-         System.arraycopy(input, 24, macAdd, 0,6); //garpì˜ macì£¼ì†Œ ë½‘ì•„ë‚´ê¸°
+         System.arraycopy(input, 24, macAdd, 0,6); //garpÀÇ macÁÖ¼Ò »Ì¾Æ³»±â
          byte[] bytes = ObjToByte(m_sHeader,input,length);
 //         System.out.println("GARP : TCP->IP send");
          
@@ -152,7 +157,7 @@ public boolean Send(byte[] input, int length) {
       for(int i=0;i<length-20;i++) {
          remvHeader[i] = input[i+20];
       }
-      return remvHeader;// ë³€ê²½í•˜ì„¸ìš” í•„ìš”í•˜ì‹œë©´
+      return remvHeader;// º¯°æÇÏ¼¼¿ä ÇÊ¿äÇÏ½Ã¸é
    }
 
    public synchronized boolean Receive(byte[] input) {
@@ -166,18 +171,35 @@ public boolean Send(byte[] input, int length) {
       if(dstme_Addr(input)) {
          this.GetUpperLayer(0).Receive(data);
          return true;
+      }else {
+         byte[] destIP = new byte[4];
+         System.arraycopy(input, 16, destIP, 0, 4);
+         Object[] value = routingTable.findEntry(destIP);
+         if(value!=null) {
+            /*flag È®ÀÎ*/
+            byte[] netAdd;
+            if((boolean)value[5]) {
+               netAdd = (byte[])value[2];
+            }else {
+               netAdd = (byte[])value[1];
+            }
+            /*³×Æ®¿öÅ© ÁÖ¼Ò -> arp*/
+//            (()this.GetUnderLayer(0))
+         }else {
+            
+         }
       }
       return false;
    }
 
-   public boolean dstme_Addr(byte[] add) {//ì£¼ì†Œí™•ì¸
+   public boolean dstme_Addr(byte[] add) {//ÁÖ¼ÒÈ®ÀÎ
       for(int i = 0;i<4;i++) {
          if(add[i+16]!=m_sHeader.ip_srcaddr[i]) return false;
       }
 
       return true;
    }
-   public boolean srcme_Addr(byte[] add) {//ì£¼ì†Œí™•ì¸
+   public boolean srcme_Addr(byte[] add) {//ÁÖ¼ÒÈ®ÀÎ
       for(int i = 0;i<4;i++) {
          if(add[i+12]!=m_sHeader.ip_srcaddr[i]) return false;
       }
@@ -207,8 +229,6 @@ public boolean Send(byte[] input, int length) {
    @Override
    public void SetUnderLayer(BaseLayer pUnderLayer) {
       // TODO Auto-generated method stub
-      if (pUnderLayer == null)
-         return;
       this.p_aUnderLayerIP.add(nUnderLayerCount++, pUnderLayer);
    }
 
@@ -222,6 +242,7 @@ public boolean Send(byte[] input, int length) {
    }
    @Override
    public void SetUpperUnderLayer(BaseLayer pUULayer) {
+//      System.out.println("ip "+pUULayer.GetLayerName());
       this.SetUpperLayer(pUULayer);
       this.SetUnderLayer(pUULayer);
    }

@@ -1,4 +1,6 @@
 import java.awt.Container;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -18,199 +20,161 @@ import javax.swing.border.EmptyBorder;
 
 public class routerAdd_Popup extends JFrame {
 
-	JTextArea input_Destination;
-	JTextArea input_Netmask;
-	JTextArea input_Gateway;
-	JComboBox<String> selectInterface;
-	JLabel lbl_Destination;
-	JLabel lbl_Netmask;
-	JLabel lbl_Gateway;
-	JLabel lbl_Flag;
-	JLabel lbl_Interface;
-	Container contentPane;
-	String[] interfaceName = { "0", "1" };
-	String interface0 = interfaceName[0];
+   JTextArea input_Destination;
+   JTextArea input_Netmask;
+   JTextArea input_Gateway;
+   JComboBox<String> selectInterface;
+   JLabel lbl_Destination;
+   JLabel lbl_Netmask;
+   JLabel lbl_Gateway;
+   JLabel lbl_Flag;
+   JLabel lbl_Interface;
+   Container contentPane;
+   String[] interfaceName = { "Port1", "Port2" };
+   String interface0 = interfaceName[0];
 
-	JCheckBox flagU;
-	JCheckBox flagG;
-	JCheckBox flagH;
+   JCheckBox flagU;
+   JCheckBox flagG;
+   JCheckBox flagH;
 
-	public routerAdd_Popup(HashMap<String, Object[]> routerTable, JTextArea routingTable) {
+   public routerAdd_Popup(RoutingTable routerTable, JTextArea routingTable) {
 
-		setTitle("Router Table Entry �߰�");
-		setSize(450, 350);
-		setLocation(1200, 300);
-		getContentPane().setLayout(null);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+      setTitle("Router Table Entry �߰�");
+      setSize(450, 350);
+      setLocation(1200, 300);
+      getContentPane().setLayout(null);
+      setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		contentPane = new JPanel();
-		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
+      contentPane = new JPanel();
+      ((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
+      setContentPane(contentPane);
+      contentPane.setLayout(null);
 
-		lbl_Destination = new JLabel("Destination");
-		lbl_Destination.setBounds(50, 25, 90, 30);
+      lbl_Destination = new JLabel("Destination");
+      lbl_Destination.setBounds(50, 25, 90, 30);
 
-		input_Destination = new JTextArea();
-		input_Destination.setBounds(150, 30, 170, 20);
+      input_Destination = new JTextArea();
+      input_Destination.setBounds(150, 30, 170, 20);
 
-		contentPane.add(lbl_Destination);
-		contentPane.add(input_Destination);
+      contentPane.add(lbl_Destination);
+      contentPane.add(input_Destination);
 
-		lbl_Netmask = new JLabel("Netmask");
-		lbl_Netmask.setBounds(50, 60, 90, 30);
+      lbl_Netmask = new JLabel("Netmask");
+      lbl_Netmask.setBounds(50, 60, 90, 30);
 
-		input_Netmask = new JTextArea();
-		input_Netmask.setBounds(150, 65, 170, 20);
+      input_Netmask = new JTextArea();
+      input_Netmask.setBounds(150, 65, 170, 20);
 
-		contentPane.add(lbl_Netmask);
-		contentPane.add(input_Netmask);
+      contentPane.add(lbl_Netmask);
+      contentPane.add(input_Netmask);
 
-		lbl_Gateway = new JLabel("Gateway");
-		lbl_Gateway.setBounds(50, 95, 90, 30);
+      lbl_Gateway = new JLabel("Gateway");
+      lbl_Gateway.setBounds(50, 95, 90, 30);
 
-		input_Gateway = new JTextArea();
-		input_Gateway.setBounds(150, 100, 170, 20);
+      input_Gateway = new JTextArea();
+      input_Gateway.setBounds(150, 100, 170, 20);
 
-		contentPane.add(lbl_Gateway);
-		contentPane.add(input_Gateway);
+      contentPane.add(lbl_Gateway);
+      contentPane.add(input_Gateway);
 
-		lbl_Flag = new JLabel("Flag");
-		lbl_Flag.setBounds(50, 130, 90, 30);
-		contentPane.add(lbl_Flag);
+      lbl_Flag = new JLabel("Flag");
+      lbl_Flag.setBounds(50, 130, 90, 30);
+      contentPane.add(lbl_Flag);
 
-		flagU = new JCheckBox("UP");
-		flagU.setBounds(150, 135, 50, 20);
-		contentPane.add(flagU);
+      flagU = new JCheckBox("UP");
+      flagU.setBounds(150, 135, 50, 20);
+      contentPane.add(flagU);
 
-		flagG = new JCheckBox("Gateway");
-		flagG.setBounds(205, 135, 80, 20);
-		contentPane.add(flagG);
+      flagG = new JCheckBox("Gateway");
+      flagG.setBounds(205, 135, 80, 20);
+      contentPane.add(flagG);
 
-		flagH = new JCheckBox("Host");
-		flagH.setBounds(285, 135, 60, 20);
-		contentPane.add(flagH);
+      flagH = new JCheckBox("Host");
+      flagH.setBounds(285, 135, 60, 20);
+      contentPane.add(flagH);
 
-		lbl_Interface = new JLabel("Interface");
-		lbl_Interface.setBounds(50, 165, 90, 30);
-		contentPane.add(lbl_Interface);
+      lbl_Interface = new JLabel("Interface");
+      lbl_Interface.setBounds(50, 165, 90, 30);
+      contentPane.add(lbl_Interface);
 
-		selectInterface = new JComboBox<String>(interfaceName);
-		selectInterface.setBounds(150, 170, 170, 20);
-		selectInterface.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				interface0 = interfaceName[selectInterface.getSelectedIndex()];
-			}
-		});
-		contentPane.add(selectInterface);
+      selectInterface = new JComboBox<String>(interfaceName);
+      selectInterface.setBounds(150, 170, 170, 20);
+      selectInterface.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            interface0 = interfaceName[selectInterface.getSelectedIndex()];
+         }
+      });
+      contentPane.add(selectInterface);
 
-		JButton btnOk = new JButton("Ok");
-		btnOk.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (!input_Destination.getText().equals("") && !input_Netmask.getText().equals("")
-						&& !input_Gateway.getText().contentEquals("")) {
+      JButton btnOk = new JButton("Ok");
+      btnOk.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent arg0) {
+            if (!input_Destination.getText().equals("") && !input_Netmask.getText().equals("")
+                  && !input_Gateway.getText().contentEquals("")) {
 
-					StringTokenizer st = new StringTokenizer(input_Destination.getText(), ".");
+               StringTokenizer st = new StringTokenizer(input_Destination.getText(), ".");
 
-					byte[] Destination = new byte[4];
-					for (int i = 0; i < 4; i++) {
-						String ss = st.nextToken();
-						int s = Integer.parseInt(ss);
-						Destination[i] = (byte) (s & 0xFF);
-					}
+               byte[] Destination = new byte[4];
+               for (int i = 0; i < 4; i++) {
+                  String ss = st.nextToken();
+                  int s = Integer.parseInt(ss);
+                  Destination[i] = (byte) (s & 0xFF);
+               }
 
-					st = new StringTokenizer(input_Netmask.getText(), ".");
+               st = new StringTokenizer(input_Netmask.getText(), ".");
 
-					byte[] Netmask = new byte[4];
-					for (int i = 0; i < 4; i++) {
-						String ss = st.nextToken();
-						int s = Integer.parseInt(ss);
-						Netmask[i] = (byte) (s & 0xFF);
-					}
+               byte[] Netmask = new byte[4];
+               for (int i = 0; i < 4; i++) {
+                  String ss = st.nextToken();
+                  int s = Integer.parseInt(ss);
+                  Netmask[i] = (byte) (s & 0xFF);
+               }
 
-					st = new StringTokenizer(input_Gateway.getText(), ".");
+               st = new StringTokenizer(input_Gateway.getText(), ".");
 
-					byte[] Gateway = new byte[4];
-					for (int i = 0; i < 4; i++) {
-						String ss = st.nextToken();
-						int s = Integer.parseInt(ss);
-						Gateway[i] = (byte) (s & 0xFF);
-					}
+               byte[] Gateway = new byte[4];
+               for (int i = 0; i < 4; i++) {
+                  String ss = st.nextToken();
+                  int s = Integer.parseInt(ss);
+                  Gateway[i] = (byte) (s & 0xFF);
+               }
 
-					System.out.println(flagU.isSelected()); // üũ���� �˱�
-					System.out.println(flagG.isSelected());
-					System.out.println(flagH.isSelected());
-					String interface_Num = interface0;
+               System.out.println(flagU.isSelected()); 
+               System.out.println(flagG.isSelected());
+               System.out.println(flagH.isSelected());
+               String interface_Num = interface0;
 
-					/* routing table�� �߰��ϰ� ������Ʈ */
+               /* routing table�� �߰��ϰ� ������Ʈ */
 
-					Object[] value = new Object[7];
-					value[0] = Destination;
-					value[1] = Netmask;
-					value[2] = Gateway;
-					value[3] = flagU.isSelected();
-					value[4] = flagG.isSelected();
-					value[5] = flagH.isSelected();
-					value[6] = interface_Num;
+               Object[] value = new Object[7];
+               value[0] = Destination;
+               value[1] = Netmask;
+               value[2] = Gateway;
+               value[3] = flagU.isSelected();
+               value[4] = flagG.isSelected();
+               value[5] = flagH.isSelected();
+               value[6] = interface_Num;
 
-					routerTable.put(input_Destination.getText(), value);
-					String printResult = "";
-					for (Iterator iterator = routerTable.keySet().iterator(); iterator.hasNext();) {
-						String keyIP = (String) iterator.next();
-						System.out.println(printResult);
-						Object[] obj = routerTable.get(keyIP);
-						printResult = printResult + "    " + keyIP;
-						byte[] Netmask_routeTable = (byte[]) routerTable.get(keyIP)[1];
-						byte[] Gateway_routeTable = (byte[]) routerTable.get(keyIP)[2];
-						String destination_String = keyIP;
-						String mask_String = "";
-						String gateway_String = "";
-						String flag_String = "";
-						String interface_String = obj[6] + "";
+               routerTable.add(value);               
+               routingTable.setText(routerTable.updateRoutingTable());
+               dispose();
+            } // =======================
 
-						for (int j = 0; j < 3; j++)
-							mask_String = mask_String + (Netmask_routeTable[j]&0xFF)+".";
-						mask_String = mask_String + (Netmask_routeTable[3]&0xFF);
+         }
+      });
 
-						for (int j = 0; j < 3; j++)
-							gateway_String = gateway_String + (Gateway_routeTable[j]&0xFF)+".";
-						gateway_String = gateway_String + (Gateway_routeTable[3]&0xFF);
+      btnOk.setBounds(130, 250, 80, 30);
+      getContentPane().add(btnOk);
 
-						if ((boolean) obj[3]) {
-							flag_String += "U";
-						}
-						if ((boolean) obj[4]) {
-							flag_String += "G";
-						}
-						if ((boolean) obj[5]) {
-							flag_String += "H";
-						}
+      JButton btnCancel = new JButton("Cancel");
+      btnCancel.addActionListener(new ActionListener() {
 
-						printResult = printResult + "    " + mask_String + "      " + gateway_String + "         " + flag_String
-								+ "        " + interface_String + "\n";
-					}
-					int routerSize = routerTable.size();
-					System.out.println(routerTable.size() + "  " + printResult);
-					routingTable.setText(printResult);
-
-					dispose();
-				} // =======================
-
-			}
-		});
-
-		btnOk.setBounds(130, 250, 80, 30);
-		getContentPane().add(btnOk);
-
-		JButton btnCancel = new JButton("Cancel");
-		btnCancel.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				dispose();
-			}
-		});
-		btnCancel.setBounds(220, 250, 80, 30);
-		getContentPane().add(btnCancel);
-		setVisible(true);
-	}
+         public void actionPerformed(ActionEvent arg0) {
+            dispose();
+         }
+      });
+      btnCancel.setBounds(220, 250, 80, 30);
+      getContentPane().add(btnCancel);
+      setVisible(true);
+   }
 }

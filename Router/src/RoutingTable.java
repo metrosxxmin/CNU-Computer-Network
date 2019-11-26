@@ -60,7 +60,7 @@ public class RoutingTable {
       String destIP2String;
       String nodeNetmask2String;
 
-      /* Object[] valueë¥¼ Stringìœ¼ë¡œ ë³€í™˜ : ë¹„êµí•˜ê¸° ìœ„í•¨ */
+      /* Object[] value¸¦ StringÀ¸·Î º¯È¯ : ºñ±³ÇÏ±â À§ÇÔ */
       byte[] valueDestIP = (byte[]) value[0];
       byte[] valueNetmask = (byte[]) value[1];
       String valueDestIPString = (valueDestIP[0] & 0xFF) + "." + (valueDestIP[1] & 0xFF) + "."
@@ -77,7 +77,7 @@ public class RoutingTable {
                + (destIP[3] & 0xFF);
          nodeNetmask2String = (nodeNetmask[0] & 0xFF) + "." + (nodeNetmask[1] & 0xFF) + "." + (nodeNetmask[2] & 0xFF)
                + "." + (nodeNetmask[3] & 0xFF);
-         /* Destination IPì£¼ì†Œì™€ Netmaskë§Œ ê°™ì€ì§€ í™•ì¸ */
+         /* Destination IPÁÖ¼Ò¿Í Netmask¸¸ °°ÀºÁö È®ÀÎ */
          System.out.println(destIP2String);
          System.out.println(nodeNetmask2String);
          if (destIP2String.equals(valueDestIPString) && nodeNetmask2String.equals(valueNetmaskString)) {

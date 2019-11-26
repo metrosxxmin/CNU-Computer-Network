@@ -34,109 +34,136 @@ public class Second_Popup extends JFrame {
 	Container contentPane;
 	String[] hostsName = {"Host B","Host C","Host D"};
 	String host = hostsName[0];
+	
+	JComboBox<String> selectInterface;
+	JLabel lbl_Interface;
+	String[] interfaceName = { "Port1", "Port2" };
+	String interface0 = interfaceName[0];
 	int proxySize =0;
-		
-	public Second_Popup(HashMap<String, Object[] > proxyTable, JTextArea proxyArea) {
-		
+//
+//	JComboBox<String> selectInterface;
+//	JLabel lbl_Interface;
+//	String[] interfaceName = { "Port1", "Port2" };
+//	String interface0 = interfaceName[0];
+
+	public Second_Popup(HashMap<String, Object[] > proxyTable,JTextArea proxyArea) {
+
 		setTitle("Proxy ARP Entry 眠啊");
 		setSize(450, 350);
 		setLocation(1200, 300);
 		getContentPane().setLayout(null);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		
+
 		contentPane = new JPanel();
 		((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
-	
-		lbl_Device = new JLabel("Device");
-		lbl_Device.setBounds(50, 40, 90, 30);
-		
-		
-		selectHost = new JComboBox<String>(hostsName);
-		selectHost.setBounds(150, 40, 180, 30);
-		selectHost.addActionListener(new ActionListener() {
+
+
+//		lbl_Device = new JLabel("Device");
+//		lbl_Device.setBounds(50, 40, 90, 30);
+
+		lbl_Interface = new JLabel("Interface");
+		lbl_Interface.setBounds(50, 40, 90, 30);
+		contentPane.add(lbl_Interface);
+
+		selectInterface = new JComboBox<String>(interfaceName);
+		selectInterface.setBounds(150, 40, 180, 30);
+		selectInterface.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				host = hostsName[selectHost.getSelectedIndex()];
+				interface0 = interfaceName[selectInterface.getSelectedIndex()];
 			}
 		});
-		contentPane.add(lbl_Device);
-		contentPane.add(selectHost);
+		contentPane.add(selectInterface);
 		
+
+//		contentPane.add(lbl_Device);
+//		contentPane.add(selectHost);
+
 		lbl_protocol = new JLabel("IP 林家");
 		lbl_protocol.setBounds(50, 90, 90, 30);
 		inputProtocol = new JTextArea();
 		inputProtocol.setBounds(150, 90, 180, 30);
 		inputProtocol.setEnabled(true);
-		
+
 		contentPane.add(lbl_protocol);
 		contentPane.add(inputProtocol);
-		
+
 		lbl_mac = new JLabel("Ethernet 林家");
 		lbl_mac.setBounds(50, 140, 90, 30);
 		inputMac = new JTextArea();
 		inputMac.setBounds(150, 140, 180, 30);
 		inputMac.setEnabled(true);
-		
+
 		contentPane.add(lbl_mac);
 		contentPane.add(inputMac);
-	
-		
+
+
+
+
 		JButton btnOk = new JButton("Ok");
 		btnOk.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (!inputProtocol.getText().equals("") && !inputMac.getText().equals("")) {
-					String hostName = host;
-					StringTokenizer st = new StringTokenizer(inputProtocol.getText(), ".");
+					String interface_Num = interface0;
 					
-					byte[] ipAddress = new byte[4];
-					for (int i = 0; i < 4; i++) {
-						String ss = st.nextToken();
-						int s = Integer.parseInt(ss);
-						ipAddress[i] = (byte) (s & 0xFF);
-					}
+						String hostName = host;
+						StringTokenizer st = new StringTokenizer(inputProtocol.getText(), ".");
+
+						byte[] ipAddress = new byte[4];
+						for (int i = 0; i < 4; i++) {
+							String ss = st.nextToken();
+							int s = Integer.parseInt(ss);
+							ipAddress[i] = (byte) (s & 0xFF);
+						}
+
+						st = new StringTokenizer(inputMac.getText(), ":");
+						byte[] macAddress = new byte[6];
+						for (int i = 0; i < 6; i++) {
+							String ss = st.nextToken();
+							int s = Integer.parseInt(ss, 16);
+							macAddress[i] = (byte) (s & 0xFF);
+						}
+						Object[] value = new Object[3];
+						value[0] = interface_Num;
+						value[1] = macAddress;
+						value[2] = ipAddress;
+//						value[3] = interface_Num;
+
+						proxyTable.put(inputProtocol.getText(), value);
+
 					
-					st = new StringTokenizer(inputMac.getText(), ":");
-					byte[] macAddress = new byte[6];
-					for (int i = 0; i < 6; i++) {
-						String ss = st.nextToken();
-						int s = Integer.parseInt(ss, 16);
-						macAddress[i] = (byte) (s & 0xFF);
-					}
-					Object[] value = new Object[3];
-					value[0] = hostName;
-					value[1] = macAddress;
-					value[2] = ipAddress;
-					
-					proxyTable.put(inputProtocol.getText(), value);
+
 					String printResult ="";
+
 					for(Iterator iterator = proxyTable.keySet().iterator(); iterator.hasNext();) {
 						String keyIP = (String)iterator.next();
 						Object[] obj = proxyTable.get(keyIP);
-						printResult = printResult+"    "+(String)obj[0]+"\t";
+
 						byte[] mac = (byte[])proxyTable.get(keyIP)[1];
 						String ip_String =keyIP;
 						String mac_String ="";
-						
+
 
 						for(int j=0;j<5;j++) mac_String = mac_String + String.format("%X:",mac[j]);
 						mac_String = mac_String + String.format("%X",mac[5]);
-						
-						printResult = printResult+ip_String+"\t    "+mac_String+"\n";
+
+						printResult = printResult+ip_String+"\t    "+mac_String+"\t    "+obj[0]+"\n";
 					}
+				
 					proxySize = proxyTable.size();
 					System.out.println(proxyTable.size()+"  "+printResult);
 					proxyArea.setText(printResult);
 					dispose();
+
 				}
 
 			}
 		});
-		
+
 		btnOk.setBounds(130, 250, 80, 30);
 		getContentPane().add(btnOk);
-		
+
 		JButton btnCancel = new JButton("Cancel");
 		btnCancel.addActionListener(new ActionListener() {
 
