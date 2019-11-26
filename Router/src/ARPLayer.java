@@ -12,8 +12,9 @@ import org.jnetpcap.packet.PcapPacketHandler;
 
 public class ARPLayer implements BaseLayer {
    public int nUpperLayerCount = 0;
+   public int nUnderLayerCount = 0;
    public String pLayerName = null;
-   public BaseLayer p_UnderLayer = null;
+   public ArrayList<BaseLayer> p_aUnderLayerARP = new ArrayList<BaseLayer>();
    public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 
    HashMap<String, Object[]> cacheTable = new HashMap<String, Object[]>();
@@ -113,7 +114,7 @@ public class ARPLayer implements BaseLayer {
    }
 
    /*
-    * IP Layer에서 호출되는 Send일 경우, opcode는 1이며, ARP Layer에서 호출되는 Send일 경우 opcode는 2다.
+    * IP Layer�뿉�꽌 �샇異쒕릺�뒗 Send�씪 寃쎌슦, opcode�뒗 1�씠硫�, ARP Layer�뿉�꽌 �샇異쒕릺�뒗 Send�씪 寃쎌슦 opcode�뒗 2�떎.
     */
    public boolean Send(byte[] arp_protocol_srcaddr, byte[] arp_protocol_dstaddr, byte[] mac_srcaddr,
          byte[] mac_dstaddr, byte[] arp_opcode) {
@@ -144,7 +145,7 @@ public class ARPLayer implements BaseLayer {
          m_sHeader._arp_mac_srcaddr.addr = arp_mac_srcaddr;
 
       } else if (arp_opcode[0] == (byte) 0x00 && arp_opcode[1] == (byte) 0x04) {
-         System.out.println("GARP가 수정되어 sender의 arp 레이어까지 들어옴");
+         System.out.println("GARP媛� �닔�젙�릺�뼱 sender�쓽 arp �젅�씠�뼱源뚯� �뱾�뼱�샂");
 
          arp_opcode[0] = (byte) 0x00;
          arp_opcode[1] = (byte) 0x01;
@@ -153,7 +154,7 @@ public class ARPLayer implements BaseLayer {
          m_sHeader._arp_protocol_srcaddr.addr = arp_protocol_srcaddr;
          m_sHeader._arp_protocol_dstaddr.addr = arp_protocol_dstaddr;
 
-         System.out.println("GARP 보냄 " + arp_protocol_srcaddr + ":" + arp_protocol_dstaddr);
+         System.out.println("GARP 蹂대깂 " + arp_protocol_srcaddr + ":" + arp_protocol_dstaddr);
          m_sHeader._arp_mac_srcaddr.addr = mac_srcaddr;
 
       } else {
@@ -220,7 +221,7 @@ public class ARPLayer implements BaseLayer {
 
             // arp_mac_dstaddr = tempString;
             Send(m_sHeader._arp_protocol_srcaddr.addr, m_sHeader._arp_protocol_srcaddr.addr, arp_mac_srcaddr,
-                  new byte[6], newOp); // garp 에러 reply send
+                  new byte[6], newOp); // garp �뿉�윭 reply send
             return true;
          }
 
@@ -335,9 +336,8 @@ public class ARPLayer implements BaseLayer {
    @Override
    public BaseLayer GetUnderLayer() {
       // TODO Auto-generated method stub
-      if (p_UnderLayer == null)
-         return null;
-      return p_UnderLayer;
+      
+        return null;
    }
 
    @Override
@@ -351,9 +351,10 @@ public class ARPLayer implements BaseLayer {
    @Override
    public void SetUnderLayer(BaseLayer pUnderLayer) {
       // TODO Auto-generated method stub
-      if (pUnderLayer == null)
+      if (pUnderLayer == null) {
          return;
-      this.p_UnderLayer = pUnderLayer;
+      }
+      this.p_aUnderLayerARP.add(nUnderLayerCount++, pUnderLayer);
    }
 
    @Override
@@ -367,7 +368,7 @@ public class ARPLayer implements BaseLayer {
    @Override
    public void SetUpperUnderLayer(BaseLayer pUULayer) {
       this.SetUpperLayer(pUULayer);
-      pUULayer.SetUnderLayer(this);
+      this.SetUnderLayer(pUULayer);
    }
 
    public void SetMacAddrSrcAddr(byte[] srcaddr) {
@@ -384,7 +385,9 @@ public class ARPLayer implements BaseLayer {
 
    @Override
    public BaseLayer GetUnderLayer(int nindex) {
-      return null;
+      if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
+         return null;
+      return p_aUnderLayerARP.get(nindex);
    }
 
    class Cache_Timeout implements Runnable {
