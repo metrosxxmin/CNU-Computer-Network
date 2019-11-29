@@ -144,9 +144,9 @@ public class routerAdd_Popup extends JFrame {
                System.out.println(flagH.isSelected());
                String interface_Num = interface0;
 
-               /* routing table�� �߰��ϰ� ������Ʈ */
+               /* routing table add*/
 
-               Object[] value = new Object[7];
+               Object[] value = new Object[6];
                value[0] = Destination;
                value[1] = Netmask;
                value[2] = Gateway;
@@ -155,7 +155,7 @@ public class routerAdd_Popup extends JFrame {
                value[5] = flagH.isSelected();
                value[6] = interface_Num;
 
-               routerTable.add(value);               
+               routerTable.add(input_Destination.getText(), value);               
                routingTable.setText(routerTable.updateRoutingTable());
                dispose();
             } // =======================

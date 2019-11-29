@@ -8,93 +8,51 @@ import java.util.Map.Entry;
 
 public class RoutingTable {
 
-  
-   public static class CustomizedHashMap implements Comparator<Map.Entry<Integer, Node>> {
+   public static class CustomizedHashMap implements Comparator<Map.Entry<Integer, HashMap<String,Object[]>>> {
 
       @Override
-      public int compare(Entry<Integer, Node> o1, Entry<Integer, Node> o2) {
+      public int compare(Entry<Integer, HashMap<String,Object[]>> o1, Entry<Integer, HashMap<String,Object[]>> o2) {
          // TODO Auto-generated method stub
          return -o1.getKey().compareTo(o2.getKey());
       }
    }
 
-   public static Map<Integer,Node> rountingTable;
-   public Node head;
-   public static List<Map.Entry<Integer, Node>> entries;
+
+   public static Map<Integer,HashMap<String,Object[]>> rountingTable;
+   public HashMap<String,Object[]> head;
+
+   public static List<Map.Entry<Integer, HashMap<String,Object[]>>> entries;
 
    public RoutingTable() {
-      rountingTable = new HashMap<Integer,Node>();
+      rountingTable = new HashMap<Integer,HashMap<String,Object[]>>();
    }
 
-   public static void add(Object[] value) {
+   public static void add(String key, Object[] value) {
 
-      Node head = null;
+      HashMap<String,Object[]> head = null;
       byte[] netmask = (byte[]) value[1];
       int netnum = computeNetnum(netmask);
       System.out.println(netnum);
 
       if(rountingTable.containsKey(netnum)) {
          head = rountingTable.get(netnum);
-         head.next = new Node(head.next,value);
+
+         head.put(key, value);
+
       }else {
-         rountingTable.put(netnum, new Node(null,value));
+         rountingTable.put(netnum, new HashMap<String,Object[]>());
+         head = rountingTable.get(netnum);
+         //         head.next = new HashMap<String,Object[]>();
+         head.put(key, value);
          Sorting();
 
       }
    }
 
    public static void Sorting() {
-      entries = new ArrayList<Map.Entry<Integer, Node>>(rountingTable.entrySet());
-       Collections.sort(entries, new CustomizedHashMap());
-       
-   }
-   public boolean remove(Object[] value) {
-      byte[] netmask = (byte[]) value[1];
-      int netnum = computeNetnum(netmask);
+      entries = new ArrayList<Map.Entry<Integer, HashMap<String,Object[]>>>(rountingTable.entrySet());
+      Collections.sort(entries, new CustomizedHashMap());
 
-      Node head = rountingTable.get(netnum);
-      if(head==null) return false;
-      
-      byte[] destIP;
-      byte[] nodeNetmask;
-      String destIP2String;
-      String nodeNetmask2String;
-
-      /* Object[] value를 String으로 변환 : 비교하기 위함 */
-      byte[] valueDestIP = (byte[]) value[0];
-      byte[] valueNetmask = (byte[]) value[1];
-      String valueDestIPString = (valueDestIP[0] & 0xFF) + "." + (valueDestIP[1] & 0xFF) + "."
-            + (valueDestIP[2] & 0xFF) + "." + (valueDestIP[3] & 0xFF);
-      String valueNetmaskString = (valueNetmask[0] & 0xFF) + "." + (valueNetmask[1] & 0xFF) + "."
-            + (valueNetmask[2] & 0xFF) + "." + (valueNetmask[3] & 0xFF);
-      
-      Node prev = null;
-      for (Node p = head; p != null; p = p.next) {
-         
-         destIP = (byte[]) p.value[0];
-         nodeNetmask = (byte[]) p.value[1];
-         destIP2String = (destIP[0] & 0xFF) + "." + (destIP[1] & 0xFF) + "." + (destIP[2] & 0xFF) + "."
-               + (destIP[3] & 0xFF);
-         nodeNetmask2String = (nodeNetmask[0] & 0xFF) + "." + (nodeNetmask[1] & 0xFF) + "." + (nodeNetmask[2] & 0xFF)
-               + "." + (nodeNetmask[3] & 0xFF);
-         /* Destination IP주소와 Netmask만 같은지 확인 */
-         System.out.println(destIP2String);
-         System.out.println(nodeNetmask2String);
-         if (destIP2String.equals(valueDestIPString) && nodeNetmask2String.equals(valueNetmaskString)) {
-            if(p==head) {
-               System.out.println("here");
-               rountingTable.remove(netnum);
-               Sorting();
-            }else if(p.next==null) {
-               prev.next = null;
-            }else {
-               p.next = p.next.next;
-            }
-            return true;
-         }
-         prev = p;
-      }
-      return false;
    }
 
    public static int computeNetnum(byte[] netmask) {
@@ -110,68 +68,115 @@ public class RoutingTable {
             }
          }
       }
-      
+
       return cnt;
    }
 
-
-
    public Object[] findEntry(byte[] realDestination) {
-      if(this.entries == null) return null;
-      for(Map.Entry<Integer, Node> entry : this.entries) {
-         Node head = entry.getValue();
-         for (Node p = head; p.next != null; p = p.next) {
-            byte[] destIP = (byte[])p.value[0];
-            byte[] netmask = (byte[])p.value[1];
+      if(entries == null) return null;
 
-            if ((destIP[0]==(realDestination[0]&netmask[0]))&&(destIP[1]==(realDestination[1]&netmask[1]))&&(destIP[2]==(realDestination[2]&netmask[2]))&&(destIP[3]==(realDestination[3]&netmask[3]))) {
-               return p.value;
-            }
+      for(Map.Entry<Integer, HashMap<String,Object[]>> entry : entries) {
+
+         HashMap<String, Object[]> getMap = entry.getValue();
+         HashMap.Entry<String, Object[]> nodeEntry = getMap.entrySet().iterator().next();
+         byte[] netmask = (byte[])(nodeEntry.getValue()[1]);
+
+         //masking
+         byte[] maskingResult = new byte[4];
+         maskingResult[0]=(byte) (realDestination[0]&netmask[0]);
+         maskingResult[1]=(byte) (realDestination[1]&netmask[1]);
+         maskingResult[2]=(byte) (realDestination[2]&netmask[2]);
+         maskingResult[3]=(byte) (realDestination[3]&netmask[3]);
+
+         //masking Result convert String
+         String maskingResult2String = (maskingResult[0]&0xFF)+"."+(maskingResult[1]&0xFF)+"."+(maskingResult[2]&0xFF)+"."+(maskingResult[3]&0xFF);
+         //if destination IP Address equals masking Result
+         if(getMap.containsKey(maskingResult2String)) {
+            return getMap.get(maskingResult2String);
          }
-      }
-      return null;
 
+      }
+
+      return null;
    }
-   
+
+   public boolean remove(Object[] value) {
+      byte[] netmask = (byte[]) value[1];
+      int netnum = computeNetnum(netmask);
+
+      HashMap<String,Object[]> head = rountingTable.get(netnum);
+      if(head==null) return false;
+
+      /* Object[] value를 String으로 변환 : 비교하기 위함 */
+      byte[] valueDestIP = (byte[]) value[0];
+      String valueDestIPString = (valueDestIP[0] & 0xFF) + "." + (valueDestIP[1] & 0xFF) + "."
+            + (valueDestIP[2] & 0xFF) + "." + (valueDestIP[3] & 0xFF);
+
+      HashMap<String, Object[]> getMap = head;
+      if(getMap.containsKey(valueDestIPString)) {
+         if(getMap.size()==1) {
+            rountingTable.remove(netnum);
+            Sorting();
+         }else {
+            getMap.remove(valueDestIPString);
+         }
+         return true;
+      }
+
+      return false;
+   }
+
+
+
    public static String updateRoutingTable() {
       String printResult = "";
-      
-      for(Entry<Integer, Node> entry : entries) {
-         Node head = entry.getValue();
-         for (Node p = head; p.next != null; p = p.next) {
-            byte[] desIP_Byte = (byte[])p.value[0];
-            byte[] netmask = (byte[])p.value[1];
-            byte[] gateway_Byte = (byte[])p.value[2];
-            String destIP_String = "";
+
+      for(Entry<Integer, HashMap<String,Object[]>> entry : entries) {
+
+         HashMap<String,Object[]> head = entry.getValue();
+         HashMap<String,Object[]> map = head;
+
+         for ( String key : head.keySet() ) {
+
+            Object[] value = map.get(key);
+
+            byte[] netmask = (byte[])value[1];
+            byte[] gateway_Byte = (byte[])value[2];
+
+            String destIP_String = key;
             String mask_String = "";
             String gateway_String = "";
+
             for (int j = 0; j < 3; j++) {
+
                mask_String = mask_String + (netmask[j]&0xFF)+".";
-               destIP_String = destIP_String + (desIP_Byte[j]&0xFF)+".";
                gateway_String = gateway_String + (gateway_Byte[j]&0xFF)+".";
             }
             mask_String = mask_String + (netmask[3]&0xFF);
-            destIP_String = destIP_String + (desIP_Byte[3]&0xFF);
             gateway_String = gateway_String + (gateway_Byte[3]&0xFF)+".";
-            
+
             String flag_String = "";
-            String interface_String = p.value[6] + "";
-            if ((boolean) p.value[3]) {
+            String interface_String = value[6] + "";
+
+            if ((boolean) value[3]) {
                flag_String += "U";
             }
-            if ((boolean) p.value[4]) {
+            if ((boolean) value[4]) {
                flag_String += "G";
             }
-            if ((boolean) p.value[5]) {
+            if ((boolean) value[5]) {
                flag_String += "H";
             }
 
-            printResult =printResult + "    " +destIP_String + "    " + mask_String + "      " + gateway_String + "         " + flag_String
+            printResult = printResult + "    " +destIP_String + "    " + mask_String + "      " + gateway_String + "         " + flag_String
                   + "        " + interface_String + "\n";
-            
+
          }
-         
+
+
       }
       return printResult;
    }
+
+
 }
