@@ -23,7 +23,6 @@ public class NILayer implements BaseLayer {
 	
 
 	public NILayer(String pName) {
-		// super(pName);
 		pLayerName = pName;
 
 		m_pAdapterList = new ArrayList<PcapIf>();
@@ -34,7 +33,7 @@ public class NILayer implements BaseLayer {
 	public void PacketStartDriver() {
 		int snaplen = 64 * 1024; // Capture all packets, no trucation
 		int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
-		int timeout = 10 * 1000; // 10 seconds in millis
+		int timeout = 1 * 1; // 10 seconds in millis
 		m_AdapterObject = Pcap.openLive(m_pAdapterList.get(m_iNumAdapter).getName(), snaplen, flags, timeout, errbuf);
 	}
 
@@ -71,6 +70,7 @@ public class NILayer implements BaseLayer {
 			return false;
 		}
 		else {
+		
 			thread = new Receive_Thread(m_AdapterObject, this.GetUpperLayer(0));
 			Thread obj = new Thread(thread);
 			obj.start();
@@ -80,7 +80,6 @@ public class NILayer implements BaseLayer {
 
 	@Override
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
-		// TODO Auto-generated method stub
 		if (pUnderLayer == null)
 			return;
 		p_UnderLayer = pUnderLayer;
@@ -88,16 +87,13 @@ public class NILayer implements BaseLayer {
 
 	@Override
 	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		// TODO Auto-generated method stub
 		if (pUpperLayer == null)
 			return;
 		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
-		// nUpperLayerCount++;
 	}
 
 	@Override
 	public String GetLayerName() {
-		// TODO Auto-generated method stub
 		return pLayerName;
 	}
 
@@ -110,7 +106,6 @@ public class NILayer implements BaseLayer {
 
 	@Override
 	public BaseLayer GetUpperLayer(int nindex) {
-		// TODO Auto-generated method stub
 		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
 			return null;
 		return p_aUpperLayer.get(nindex);
@@ -125,7 +120,6 @@ public class NILayer implements BaseLayer {
 
 	@Override
 	public BaseLayer GetUnderLayer(int nindex) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }
@@ -136,13 +130,13 @@ class Receive_Thread implements Runnable {
 	BaseLayer UpperLayer;
 
 	public Receive_Thread(Pcap m_AdapterObject, BaseLayer m_UpperLayer) {
-		// TODO Auto-generated constructor stub
 		AdapterObject = m_AdapterObject;
 		UpperLayer = m_UpperLayer;
 	}
 
 	@Override
 	public void run() {
+		System.out.println(Thread.currentThread().getName());
 		while (true) {
 			PcapPacketHandler<String> jpacketHandler = new PcapPacketHandler<String>() {
 				public void nextPacket(PcapPacket packet, String user) {
@@ -151,7 +145,7 @@ class Receive_Thread implements Runnable {
 				}
 			};
 
-			AdapterObject.loop(100000, jpacketHandler, "");
+			AdapterObject.loop(10000, jpacketHandler, "");
 		}
 	}
 }
