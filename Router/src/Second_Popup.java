@@ -48,7 +48,7 @@ public class Second_Popup extends JFrame {
 
 	public Second_Popup(HashMap<String, Object[] > proxyTable,JTextArea proxyArea) {
 
-		setTitle("Proxy ARP Entry Ãß°¡");
+		setTitle("Proxy ARP Entry ï¿½ß°ï¿½");
 		setSize(450, 350);
 		setLocation(1200, 300);
 		getContentPane().setLayout(null);
@@ -80,7 +80,7 @@ public class Second_Popup extends JFrame {
 //		contentPane.add(lbl_Device);
 //		contentPane.add(selectHost);
 
-		lbl_protocol = new JLabel("IP ÁÖ¼Ò");
+		lbl_protocol = new JLabel("IP ï¿½Ö¼ï¿½");
 		lbl_protocol.setBounds(50, 90, 90, 30);
 		inputProtocol = new JTextArea();
 		inputProtocol.setBounds(150, 90, 180, 30);
@@ -89,7 +89,7 @@ public class Second_Popup extends JFrame {
 		contentPane.add(lbl_protocol);
 		contentPane.add(inputProtocol);
 
-		lbl_mac = new JLabel("Ethernet ÁÖ¼Ò");
+		lbl_mac = new JLabel("Ethernet ï¿½Ö¼ï¿½");
 		lbl_mac.setBounds(50, 140, 90, 30);
 		inputMac = new JTextArea();
 		inputMac.setBounds(150, 140, 180, 30);
