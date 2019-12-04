@@ -39,7 +39,7 @@ public class routerAdd_Popup extends JFrame {
 
    public routerAdd_Popup(RoutingTable routerTable, JTextArea routingTable) {
 
-      setTitle("Router Table Entry Ãß°¡");
+      setTitle("Router Table Entry ï¿½ß°ï¿½");
       setSize(450, 350);
       setLocation(1200, 300);
       getContentPane().setLayout(null);
@@ -139,14 +139,14 @@ public class routerAdd_Popup extends JFrame {
                   Gateway[i] = (byte) (s & 0xFF);
                }
 
-               System.out.println(flagU.isSelected()); 
-               System.out.println(flagG.isSelected());
-               System.out.println(flagH.isSelected());
+//               System.out.println(flagU.isSelected()); 
+//               System.out.println(flagG.isSelected());
+//               System.out.println(flagH.isSelected());
                String interface_Num = interface0;
 
                /* routing table add*/
 
-               Object[] value = new Object[6];
+               Object[] value = new Object[7];
                value[0] = Destination;
                value[1] = Netmask;
                value[2] = Gateway;
