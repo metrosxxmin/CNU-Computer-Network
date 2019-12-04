@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class RoutingTable {
-
+	
+	
    public static class CustomizedHashMap implements Comparator<Map.Entry<Integer, HashMap<String,Object[]>>> {
 
       @Override
@@ -32,7 +33,7 @@ public class RoutingTable {
       HashMap<String,Object[]> head = null;
       byte[] netmask = (byte[]) value[1];
       int netnum = computeNetnum(netmask);
-      System.out.println(netnum);
+//      System.out.println(netnum);
 
       if(rountingTable.containsKey(netnum)) {
          head = rountingTable.get(netnum);
@@ -73,6 +74,8 @@ public class RoutingTable {
    }
 
    public Object[] findEntry(byte[] realDestination) {
+	  long time = System.currentTimeMillis();
+//	  System.out.println(time);
       if(entries == null) return null;
 
       for(Map.Entry<Integer, HashMap<String,Object[]>> entry : entries) {
@@ -92,11 +95,13 @@ public class RoutingTable {
          String maskingResult2String = (maskingResult[0]&0xFF)+"."+(maskingResult[1]&0xFF)+"."+(maskingResult[2]&0xFF)+"."+(maskingResult[3]&0xFF);
          //if destination IP Address equals masking Result
          if(getMap.containsKey(maskingResult2String)) {
+        	 long time2 = System.currentTimeMillis();
+             System.out.println("hi : " + (time2 - time));
             return getMap.get(maskingResult2String);
          }
 
       }
-
+      
       return null;
    }
 
@@ -107,7 +112,7 @@ public class RoutingTable {
       HashMap<String,Object[]> head = rountingTable.get(netnum);
       if(head==null) return false;
 
-      /* Object[] value¸¦ StringÀ¸·Î º¯È¯ : ºñ±³ÇÏ±â À§ÇÔ */
+      /* Object[] valueï¿½ï¿½ Stringï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ : ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ */
       byte[] valueDestIP = (byte[]) value[0];
       String valueDestIPString = (valueDestIP[0] & 0xFF) + "." + (valueDestIP[1] & 0xFF) + "."
             + (valueDestIP[2] & 0xFF) + "." + (valueDestIP[3] & 0xFF);
@@ -153,7 +158,7 @@ public class RoutingTable {
                gateway_String = gateway_String + (gateway_Byte[j]&0xFF)+".";
             }
             mask_String = mask_String + (netmask[3]&0xFF);
-            gateway_String = gateway_String + (gateway_Byte[3]&0xFF)+".";
+            gateway_String = gateway_String + (gateway_Byte[3]&0xFF);
 
             String flag_String = "";
             String interface_String = value[6] + "";
