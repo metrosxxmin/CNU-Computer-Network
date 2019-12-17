@@ -1,1 +1,1 @@
-# CNU-Computer-Network
+# Computer Network at CNU
